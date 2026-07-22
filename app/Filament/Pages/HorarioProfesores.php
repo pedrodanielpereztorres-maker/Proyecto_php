@@ -6,6 +6,7 @@ use Filament\Pages\Page;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Components\Select;
+use Filament\Support\Icons\Heroicon;
 use App\Models\Profesor;
 use App\Models\Semestre;
 use App\Models\Horario;
@@ -14,7 +15,7 @@ class HorarioProfesores extends Page implements HasForms
 {
     use InteractsWithForms;
 
-    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-academic-cap';
+    protected static string|\BackedEnum|null $navigationIcon = Heroicon::OutlinedAcademicCap;
     protected static ?string $navigationLabel = 'Horario de Profesores';
     protected static ?string $title = 'Horario de Profesores';
 

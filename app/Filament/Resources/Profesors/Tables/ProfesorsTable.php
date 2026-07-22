@@ -21,7 +21,7 @@ class ProfesorsTable
                 TextColumn::make('apellido')
                     ->searchable(),
                 TextColumn::make('email')
-                    ->label('Email address')
+                    ->label('Email')
                     ->searchable(),
                 TextColumn::make('created_at')
                     ->dateTime()

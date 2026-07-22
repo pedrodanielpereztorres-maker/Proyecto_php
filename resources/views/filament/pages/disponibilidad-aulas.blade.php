@@ -16,28 +16,35 @@
         @endphp
 
         {{-- ─── Encabezado ────────────────────────────────────── --}}
-        <div class="mt-5 flex flex-wrap items-center justify-between gap-2">
-            <div>
-                <h2 class="text-lg font-bold text-gray-900 dark:text-white">
-                    Aula <span class="text-primary-600 dark:text-primary-400">{{ $aula?->codigo }}</span>
-                    <span class="ml-2 text-sm font-normal text-gray-400">
-                        {{ $aula?->tipo }} &middot; Cap. {{ $aula?->capacidad }}
-                    </span>
-                </h2>
-                <p class="text-sm text-gray-500 mt-0.5">
-                    @if($sem) Semestre: <strong>{{ $sem->nombre }}</strong> &mdash; @endif
+        <div class="mt-8 rounded-2xl bg-white dark:bg-gray-900 ring-1 ring-gray-200 dark:ring-white/10 p-6 shadow-sm">
+            <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
+                        Aula <span class="text-primary-600 dark:text-primary-400">{{ $aula?->codigo }}</span>
+                    </h2>
+                    <p class="text-sm text-gray-500 mt-2">
+                        {{ $aula?->tipo }} &middot; Capacidad {{ $aula?->capacidad }}
+                        @if($sem)
+                            &mdash; Semestre: <strong class="text-gray-900 dark:text-white">{{ $sem->nombre }}</strong>
+                        @endif
+                    </p>
+                </div>
+
+                <div class="inline-flex items-center rounded-full border border-gray-200 bg-gray-50 px-4 py-2 text-sm font-semibold text-gray-700 dark:border-white/10 dark:bg-white/5 dark:text-gray-200">
                     @if($libre)
-                        <span class="font-semibold text-emerald-600 dark:text-emerald-400">Sin horarios — completamente libre</span>
+                        ✓ DISPONIBLE
                     @else
-                        <span class="font-semibold text-amber-600 dark:text-amber-400">{{ $horarios->count() }} horario(s) registrado(s)</span>
+                        CON ASIGNACIONES
                     @endif
-                </p>
+                </div>
             </div>
-            @if($libre)
-                <span class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">✓ DISPONIBLE</span>
-            @else
-                <span class="px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300">CON ASIGNACIONES</span>
-            @endif
+            <div class="mt-4 text-sm text-gray-600 dark:text-gray-400">
+                @if($libre)
+                    <span class="font-semibold text-emerald-600 dark:text-emerald-400">Sin horarios — completamente libre</span>
+                @else
+                    <span class="font-semibold text-amber-600 dark:text-amber-400">{{ $horarios->count() }} horario(s) registrado(s)</span>
+                @endif
+            </div>
         </div>
 
         {{-- ─── Tabla o mensaje vacío ──────────────────────────── --}}

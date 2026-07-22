@@ -14,29 +14,30 @@
         @endphp
 
         {{-- ─── Encabezado del resultado ────────────────────── --}}
-        <div class="mt-6 flex flex-wrap items-center justify-between gap-3">
-            <div>
-                <h2 class="text-xl font-bold text-gray-900 dark:text-white">
-                    {{ $prof?->nombre }} {{ $prof?->apellido }}
-                </h2>
-                <p class="text-sm text-gray-500 mt-0.5">
-                    Horario de clases
-                    @if($sem) &mdash; {{ $sem->nombre }} @endif
-                    &mdash;
-                    <span class="font-medium {{ $horarios->isEmpty() ? 'text-emerald-600' : 'text-blue-600' }}">
-                        {{ $horarios->count() }} clase(s) asignada(s)
-                    </span>
-                </p>
+        <div class="mt-8 rounded-2xl bg-white dark:bg-gray-900 ring-1 ring-gray-200 dark:ring-white/10 p-6 shadow-sm">
+            <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
+                        {{ $prof?->nombre }} {{ $prof?->apellido }}
+                    </h2>
+                    <p class="text-sm text-gray-500 mt-2">
+                        Horario de clases
+                        @if($sem) &mdash; {{ $sem->nombre }} @endif
+                    </p>
+                </div>
+                <div class="rounded-full border border-gray-200 bg-gray-50 px-4 py-2 text-sm font-semibold text-gray-700 dark:border-white/10 dark:bg-white/5 dark:text-gray-200">
+                    {{ $horarios->count() }} clase(s) asignada(s)
+                </div>
             </div>
         </div>
 
         {{-- ─── Tabla ────────────────────────────────────────── --}}
         @if($horarios->isEmpty())
-            <div class="mt-4 rounded-xl bg-white dark:bg-gray-900 ring-1 ring-gray-200 dark:ring-white/10 py-10 text-center text-gray-500 dark:text-gray-400">
+            <div class="mt-4 rounded-2xl bg-white dark:bg-gray-900 ring-1 ring-gray-200 dark:ring-white/10 py-10 px-6 text-center text-gray-500 dark:text-gray-400">
                 Este profesor no tiene horarios asignados{{ $sem ? ' en el semestre ' . $sem->nombre : '' }}.
             </div>
         @else
-            <div class="mt-4 rounded-xl overflow-hidden ring-1 ring-gray-200 dark:ring-white/10">
+            <div class="mt-4 rounded-2xl overflow-hidden ring-1 ring-gray-200 dark:ring-white/10 shadow-sm">
                 <table class="w-full text-sm bg-white dark:bg-gray-900">
                     <thead class="bg-gray-50 dark:bg-gray-800">
                         <tr class="border-b border-gray-200 dark:border-white/10">
@@ -90,11 +91,9 @@
         @endif
 
     @else
-        {{-- ─── Estado inicial ──────────────────────────────── --}}
-        <div class="mt-8 flex flex-col items-center justify-center py-20 text-center">
-            <x-heroicon-o-user-group class="w-12 h-12 text-gray-300 dark:text-gray-600 mb-4" />
+        <div class="mt-6 rounded-xl border border-gray-200 bg-white dark:border-white/10 dark:bg-gray-900/95 p-8 text-center max-w-xl mx-auto">
             <p class="text-base font-semibold text-gray-700 dark:text-gray-300">Selecciona un Profesor</p>
-            <p class="text-sm text-gray-400 mt-1 max-w-xs">Elige el semestre y el profesor para ver su horario completo de clases.</p>
+            <p class="text-sm text-gray-400 mt-1">Elige el semestre y el profesor para ver su horario completo de clases.</p>
         </div>
     @endif
 
