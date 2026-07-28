@@ -5,7 +5,7 @@ namespace App\Filament\Resources\Horarios\Schemas;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TimePicker;
 use Filament\Schemas\Schema;
-use App\Models\Semestre;
+use App\Models\PeriodoAcademico;
 
 class HorarioForm
 {
@@ -13,9 +13,9 @@ class HorarioForm
     {
         return $schema
             ->components([
-                Select::make('semestre_id')
-                    ->label('Semestre')
-                    ->relationship('semestre', 'nombre')
+                Select::make('periodo_academico_id')
+                    ->label('Periodo Académico')
+                    ->relationship('periodoAcademico', 'codigo')
                     ->preload()
                     ->searchable()
                     ->required(),
