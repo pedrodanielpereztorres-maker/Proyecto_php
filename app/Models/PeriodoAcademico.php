@@ -15,13 +15,15 @@ class PeriodoAcademico extends Model
         'codigo',
         'fecha_inicio',
         'fecha_fin',
-        'activo',
+        'estado',
+        'duracion_semanas',
     ];
 
     protected $casts = [
         'fecha_inicio' => 'date',
         'fecha_fin' => 'date',
-        'activo' => 'boolean',
+        'estado' => 'string',
+        'duracion_semanas' => 'integer',
     ];
 
     public function horarios()

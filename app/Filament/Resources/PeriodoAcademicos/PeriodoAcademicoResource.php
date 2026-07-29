@@ -53,10 +53,22 @@ class PeriodoAcademicoResource extends Resource
                 ->label('Fecha de Fin')
                 ->native(false),
 
-            Toggle::make('activo')
-                ->label('Período Activo')
-                ->helperText('Marca este período como el activo institucionalmente.')
-                ->default(false),
+            \Filament\Schemas\Components\Select::make('estado')
+                ->label('Estado del Período')
+                ->options([
+                    'planificacion' => 'En Planificación',
+                    'curso' => 'En Curso',
+                    'cerrado' => 'Cerrado',
+                ])
+                ->default('planificacion')
+                ->required(),
+
+            \Filament\Schemas\Components\TextInput::make('duracion_semanas')
+                ->label('Duración (Semanas)')
+                ->numeric()
+                ->default(16)
+                ->minValue(1)
+                ->required(),
         ]);
     }
 
@@ -81,9 +93,25 @@ class PeriodoAcademicoResource extends Resource
                     ->date('d/m/Y')
                     ->sortable(),
 
-                IconColumn::make('activo')
-                    ->label('Activo')
-                    ->boolean(),
+                TextColumn::make('estado')
+                    ->label('Estado')
+                    ->badge()
+                    ->colors([
+                        'warning' => 'planificacion',
+                        'success' => 'curso',
+                        'danger' => 'cerrado',
+                    ])
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        'planificacion' => 'En Planificación',
+                        'curso' => 'En Curso',
+                        'cerrado' => 'Cerrado',
+                        default => $state,
+                    }),
+
+                TextColumn::make('duracion_semanas')
+                    ->label('Semanas')
+                    ->numeric()
+                    ->sortable(),
 
                 TextColumn::make('horarios_count')
                     ->label('Horarios')

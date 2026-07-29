@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('siglas')->default('IUTEPI');
             $table->string('logo')->nullable();
             $table->string('favicon')->nullable();
-            $table->string('color_principal')->default('#16a34a'); // Un verde por defecto
+            $table->string('color_principal')->default('#c71b04'); // Rojo por defecto
             $table->timestamps();
         });
     }

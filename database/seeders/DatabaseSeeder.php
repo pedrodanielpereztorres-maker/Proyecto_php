@@ -19,32 +19,33 @@ class DatabaseSeeder extends Seeder
     {
         // 1. Tipos de Jornada y Parámetros por defecto
         $tipoSemana = \App\Models\TipoJornada::firstOrCreate(['nombre' => 'Semana']);
-        JornadaParametro::firstOrCreate([
+        JornadaParametro::updateOrCreate([
             'tipo_jornada_id' => $tipoSemana->id,
         ], [
-            'duracion_bloque_minutos' => 45,
-            'duracion_receso_minutos' => 15,
-            'hora_inicio' => '07:30:00',
-            'hora_fin' => '21:00:00',
+            'duracion_bloque_minutos' => 40,
+            'duracion_receso_minutos' => 20,
+            'hora_inicio' => '08:00:00',
+            'hora_fin' => '17:00:00',
         ]);
 
         $tipoSabatino = \App\Models\TipoJornada::firstOrCreate(['nombre' => 'Sabatino']);
-        JornadaParametro::firstOrCreate([
+        JornadaParametro::updateOrCreate([
             'tipo_jornada_id' => $tipoSabatino->id,
         ], [
-            'duracion_bloque_minutos' => 45,
-            'duracion_receso_minutos' => 15,
+            'duracion_bloque_minutos' => 35,
+            'duracion_receso_minutos' => 30,
             'hora_inicio' => '07:30:00',
             'hora_fin' => '17:00:00',
         ]);
 
         // 2. Período Académico por defecto
-        PeriodoAcademico::firstOrCreate([
+        PeriodoAcademico::updateOrCreate([
             'codigo' => 'PR26-2',
         ], [
             'fecha_inicio' => '2026-09-01',
             'fecha_fin' => '2026-12-15',
-            'activo' => true,
+            'estado' => 'planificacion',
+            'duracion_semanas' => 16,
         ]);
         // 3. Turnos por defecto
         \App\Models\Turno::firstOrCreate(['nombre' => 'Matutino']);
@@ -59,7 +60,7 @@ class DatabaseSeeder extends Seeder
         \App\Models\Configuracion::firstOrCreate(['id' => 1], [
             'nombre' => 'Instituto Universitario de Tecnología Para la Informática',
             'siglas' => 'IUTEPI',
-            'color_principal' => '#16a34a',
+            'color_principal' => '#c71b04',
         ]);
     }
 }
