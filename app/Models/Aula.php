@@ -9,15 +9,10 @@ class Aula extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['codigo', 'capacidad', 'tipo_espacio_id'];
+    protected $fillable = ['codigo', 'capacidad', 'tipo'];
 
     public function horarios()
     {
         return $this->hasMany(Horario::class);
-    }
-
-    public function tipoEspacio()
-    {
-        return $this->belongsTo(TipoEspacio::class);
     }
 }
