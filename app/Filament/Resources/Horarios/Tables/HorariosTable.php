@@ -55,8 +55,8 @@ class HorariosTable
             ])
             ->filters([
                 SelectFilter::make('semestre_id')
-                    ->label('Semestre')
-                    ->options(Semestre::orderBy('nombre', 'desc')->pluck('nombre', 'id')),
+                    ->label('Periodo Académico')
+                    ->options(\App\Models\PeriodoAcademico::orderBy('codigo', 'desc')->pluck('codigo', 'id')),
                 SelectFilter::make('dia_semana')
                     ->label('Día')
                     ->options([

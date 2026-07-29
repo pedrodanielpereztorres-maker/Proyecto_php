@@ -7,7 +7,6 @@ use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Components\Select;
 use App\Models\Aula;
-use App\Models\Semestre;
 use App\Models\Horario;
 
 class DisponibilidadAulas extends Page implements HasForms
@@ -28,11 +27,11 @@ class DisponibilidadAulas extends Page implements HasForms
         return $schema
             ->components([
                 Select::make('semestre_id')
-                    ->label('Semestre')
-                    ->options(Semestre::orderBy('nombre', 'desc')->pluck('nombre', 'id'))
-                    ->default(fn () => Semestre::where('activo', true)->value('id'))
+                    ->label('Período Académico')
+                    ->options(\App\Models\PeriodoAcademico::orderBy('codigo', 'desc')->pluck('codigo', 'id'))
+                    ->default(fn () => \App\Models\PeriodoAcademico::where('estado', 'curso')->orWhere('estado', 'planificacion')->value('id'))
                     ->reactive()
-                    ->placeholder('Seleccionar semestre'),
+                    ->placeholder('Seleccionar período'),
                 Select::make('aula_id')
                     ->label('Aula')
                     ->options(Aula::pluck('codigo', 'id'))

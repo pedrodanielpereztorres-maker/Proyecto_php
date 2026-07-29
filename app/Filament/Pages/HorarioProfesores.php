@@ -8,7 +8,6 @@ use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Components\Select;
 use Filament\Support\Icons\Heroicon;
 use App\Models\Profesor;
-use App\Models\Semestre;
 use App\Models\Horario;
 
 class HorarioProfesores extends Page implements HasForms
