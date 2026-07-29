@@ -10,7 +10,7 @@
         @php
             $horarios = $this->getHorariosProperty();
             $prof     = \App\Models\Profesor::find($this->profesor_id);
-            $periodo  = $this->periodo_academico_id ? \App\Models\PeriodoAcademico::find($this->periodo_academico_id) : null;
+            $sem      = $this->semestre_id ? \App\Models\Semestre::find($this->semestre_id) : null;
         @endphp
 
         {{-- ─── Encabezado del resultado ────────────────────── --}}
@@ -22,7 +22,7 @@
                     </h2>
                     <p class="text-sm text-gray-500 mt-2">
                         Horario de clases
-                        @if($periodo) &mdash; {{ $periodo->codigo }} @endif
+                        @if($sem) &mdash; {{ $sem->nombre }} @endif
                     </p>
                 </div>
                 <div class="rounded-full border border-gray-200 bg-gray-50 px-4 py-2 text-sm font-semibold text-gray-700 dark:border-white/10 dark:bg-white/5 dark:text-gray-200">
@@ -34,7 +34,7 @@
         {{-- ─── Tabla ────────────────────────────────────────── --}}
         @if($horarios->isEmpty())
             <div class="mt-4 rounded-2xl bg-white dark:bg-gray-900 ring-1 ring-gray-200 dark:ring-white/10 py-10 px-6 text-center text-gray-500 dark:text-gray-400">
-                Este profesor no tiene horarios asignados{{ $periodo ? ' en el periodo ' . $periodo->codigo : '' }}.
+                Este profesor no tiene horarios asignados{{ $sem ? ' en el semestre ' . $sem->nombre : '' }}.
             </div>
         @else
             <div class="mt-4 rounded-2xl overflow-hidden ring-1 ring-gray-200 dark:ring-white/10 shadow-sm">
@@ -93,7 +93,7 @@
     @else
         <div class="mt-6 rounded-xl border border-gray-200 bg-white dark:border-white/10 dark:bg-gray-900/95 p-8 text-center max-w-xl mx-auto">
             <p class="text-base font-semibold text-gray-700 dark:text-gray-300">Selecciona un Profesor</p>
-            <p class="text-sm text-gray-400 mt-1">Elige el periodo académico y el profesor para ver su horario completo de clases.</p>
+            <p class="text-sm text-gray-400 mt-1">Elige el semestre y el profesor para ver su horario completo de clases.</p>
         </div>
     @endif
 

@@ -4,14 +4,14 @@
     <div class="rounded-xl bg-white dark:bg-gray-900 shadow-sm ring-1 ring-gray-200 dark:ring-white/10 p-5">
         <p class="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-4">Filtros</p>
         <form wire:submit.prevent>{{ $this->form }}</form>
-        <p class="mt-2 text-xs text-gray-400">El periodo académico es opcional. Si no lo seleccionas, se muestran todos los horarios del aula.</p>
+        <p class="mt-2 text-xs text-gray-400">El semestre es opcional. Si no lo seleccionas, se muestran todos los horarios del aula.</p>
     </div>
 
     @if($this->aula_id)
         @php
             $horarios = $this->getHorariosProperty();
             $aula     = \App\Models\Aula::find($this->aula_id);
-            $periodo  = $this->periodo_academico_id ? \App\Models\PeriodoAcademico::find($this->periodo_academico_id) : null;
+            $sem      = $this->semestre_id ? \App\Models\Semestre::find($this->semestre_id) : null;
             $libre    = $horarios->isEmpty();
         @endphp
 
@@ -24,8 +24,8 @@
                     </h2>
                     <p class="text-sm text-gray-500 mt-2">
                         {{ $aula?->tipo }} &middot; Capacidad {{ $aula?->capacidad }}
-                        @if($periodo)
-                            &mdash; Periodo: <strong class="text-gray-900 dark:text-white">{{ $periodo->codigo }}</strong>
+                        @if($sem)
+                            &mdash; Semestre: <strong class="text-gray-900 dark:text-white">{{ $sem->nombre }}</strong>
                         @endif
                     </p>
                 </div>
@@ -50,14 +50,14 @@
         {{-- ─── Tabla o mensaje vacío ──────────────────────────── --}}
         @if($libre)
             <div class="mt-4 rounded-xl bg-white dark:bg-gray-900 ring-1 ring-gray-200 dark:ring-white/10 py-10 text-center text-gray-500 dark:text-gray-400">
-                Esta aula no tiene ningún horario asignado{{ $periodo ? ' en el periodo ' . $periodo->codigo : '' }}.
+                Esta aula no tiene ningún horario asignado{{ $sem ? ' en el semestre ' . $sem->nombre : '' }}.
             </div>
         @else
             <div class="mt-4 rounded-xl overflow-hidden ring-1 ring-gray-200 dark:ring-white/10">
                 <table class="w-full text-sm bg-white dark:bg-gray-900">
                     <thead class="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-white/10">
                         <tr>
-                            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Periodo</th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Semestre</th>
                             <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Día</th>
                             <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Horario</th>
                             <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Materia</th>
@@ -70,7 +70,7 @@
                             <tr class="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
                                 <td class="px-4 py-3">
                                     <span class="inline-block px-2 py-0.5 rounded text-xs font-semibold bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300">
-                                        {{ $h->periodoAcademico?->codigo ?? '—' }}
+                                        {{ $h->semestre?->nombre ?? '—' }}
                                     </span>
                                 </td>
                                 <td class="px-4 py-3">
@@ -109,7 +109,7 @@
         {{-- ─── Estado inicial sin ícono grande ────────────────── --}}
         <div class="mt-6 rounded-xl bg-white dark:bg-gray-900 ring-1 ring-gray-200 dark:ring-white/10 py-12 text-center">
             <p class="text-base font-semibold text-gray-700 dark:text-gray-300">Selecciona un Aula</p>
-            <p class="text-sm text-gray-400 mt-1">Elige un aula (y opcionalmente un periodo académico) para ver su ocupación y disponibilidad.</p>
+            <p class="text-sm text-gray-400 mt-1">Elige un aula (y opcionalmente un semestre) para ver su ocupación y disponibilidad.</p>
         </div>
     @endif
 

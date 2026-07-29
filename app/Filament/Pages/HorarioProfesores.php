@@ -8,7 +8,7 @@ use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Components\Select;
 use Filament\Support\Icons\Heroicon;
 use App\Models\Profesor;
-use App\Models\PeriodoAcademico;
+use App\Models\Semestre;
 use App\Models\Horario;
 
 class HorarioProfesores extends Page implements HasForms
@@ -22,18 +22,18 @@ class HorarioProfesores extends Page implements HasForms
     protected string $view = 'filament.pages.horario-profesores';
 
     public ?int $profesor_id = null;
-    public ?int $periodo_academico_id = null;
+    public ?int $semestre_id = null;
 
     public function form(\Filament\Schemas\Schema $schema): \Filament\Schemas\Schema
     {
         return $schema
             ->components([
-                Select::make('periodo_academico_id')
-                    ->label('Periodo Académico')
-                    ->options(PeriodoAcademico::orderBy('codigo', 'desc')->pluck('codigo', 'id'))
-                    ->default(fn () => PeriodoAcademico::where('activo', true)->value('id'))
+                Select::make('semestre_id')
+                    ->label('Semestre')
+                    ->options(Semestre::orderBy('nombre', 'desc')->pluck('nombre', 'id'))
+                    ->default(fn () => Semestre::where('activo', true)->value('id'))
                     ->reactive()
-                    ->placeholder('Seleccionar periodo académico'),
+                    ->placeholder('Seleccionar semestre'),
                 Select::make('profesor_id')
                     ->label('Profesor')
                     ->options(
@@ -51,9 +51,9 @@ class HorarioProfesores extends Page implements HasForms
             return collect();
         }
 
-        return Horario::with(['materia.carrera', 'aula', 'periodoAcademico'])
+        return Horario::with(['materia.carrera', 'aula', 'semestre'])
             ->where('profesor_id', $this->profesor_id)
-            ->when($this->periodo_academico_id, fn ($q) => $q->where('periodo_academico_id', $this->periodo_academico_id))
+            ->when($this->semestre_id, fn ($q) => $q->where('semestre_id', $this->semestre_id))
             ->orderByRaw("CASE dia_semana
                 WHEN 'Lunes' THEN 1
                 WHEN 'Martes' THEN 2

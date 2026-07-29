@@ -9,7 +9,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
-use App\Models\PeriodoAcademico;
+use App\Models\Semestre;
 
 class HorariosTable
 {
@@ -17,8 +17,8 @@ class HorariosTable
     {
         return $table
             ->columns([
-                TextColumn::make('periodoAcademico.codigo')
-                    ->label('Periodo')
+                TextColumn::make('semestre.nombre')
+                    ->label('Semestre')
                     ->badge()
                     ->sortable()
                     ->searchable(),
@@ -54,9 +54,9 @@ class HorariosTable
                     ->sortable(),
             ])
             ->filters([
-                SelectFilter::make('periodo_academico_id')
-                    ->label('Periodo Académico')
-                    ->options(PeriodoAcademico::orderBy('codigo', 'desc')->pluck('codigo', 'id')),
+                SelectFilter::make('semestre_id')
+                    ->label('Semestre')
+                    ->options(Semestre::orderBy('nombre', 'desc')->pluck('nombre', 'id')),
                 SelectFilter::make('dia_semana')
                     ->label('Día')
                     ->options([
