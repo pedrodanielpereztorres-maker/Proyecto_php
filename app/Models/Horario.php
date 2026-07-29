@@ -14,7 +14,7 @@ class Horario extends Model
         'materia_id',
         'profesor_id',
         'aula_id',
-        'semestre_id',
+        'periodo_academico_id',
         'dia_semana',
         'hora_inicio',
         'hora_fin',
@@ -30,11 +30,11 @@ class Horario extends Model
 
     /**
      * Valida que no exista un choque de horario para el profesor ni para el aula
-     * dentro del mismo semestre, día y rango de horas.
+     * dentro del mismo periodo académico, día y rango de horas.
      */
     protected static function validarSinChoques(Horario $horario): void
     {
-        $conflictoProfesor = static::where('semestre_id', $horario->semestre_id)
+        $conflictoProfesor = static::where('periodo_academico_id', $horario->periodo_academico_id)
             ->where('dia_semana', $horario->dia_semana)
             ->where('profesor_id', $horario->profesor_id)
             ->where('id', '!=', $horario->id ?? 0)
@@ -44,11 +44,11 @@ class Horario extends Model
 
         if ($conflictoProfesor) {
             throw ValidationException::withMessages([
-                'profesor_id' => 'El profesor ya tiene una clase asignada en ese día y rango de horas para este semestre.',
+                'profesor_id' => 'El profesor ya tiene una clase asignada en ese día y rango de horas para este periodo académico.',
             ]);
         }
 
-        $conflictoAula = static::where('semestre_id', $horario->semestre_id)
+        $conflictoAula = static::where('periodo_academico_id', $horario->periodo_academico_id)
             ->where('dia_semana', $horario->dia_semana)
             ->where('aula_id', $horario->aula_id)
             ->where('id', '!=', $horario->id ?? 0)
@@ -58,7 +58,7 @@ class Horario extends Model
 
         if ($conflictoAula) {
             throw ValidationException::withMessages([
-                'aula_id' => 'El aula ya está ocupada en ese día y rango de horas para este semestre.',
+                'aula_id' => 'El aula ya está ocupada en ese día y rango de horas para este periodo académico.',
             ]);
         }
     }
@@ -80,8 +80,13 @@ class Horario extends Model
         return $this->belongsTo(Aula::class);
     }
 
+    public function periodoAcademico()
+    {
+        return $this->belongsTo(PeriodoAcademico::class);
+    }
+
     public function semestre()
     {
-        return $this->belongsTo(Semestre::class);
+        return $this->periodoAcademico();
     }
 }

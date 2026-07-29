@@ -5,7 +5,7 @@ namespace App\Filament\Resources\Semestres;
 use App\Filament\Resources\Semestres\Pages\CreateSemestre;
 use App\Filament\Resources\Semestres\Pages\EditSemestre;
 use App\Filament\Resources\Semestres\Pages\ListSemestres;
-use App\Models\Semestre;
+use App\Models\PeriodoAcademico;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -13,34 +13,41 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\IconColumn;
+use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 
 class SemestreResource extends Resource
 {
-    protected static ?string $model = Semestre::class;
+    protected static ?string $model = PeriodoAcademico::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCalendar;
 
-    protected static ?string $recordTitleAttribute = 'nombre';
+    protected static ?string $recordTitleAttribute = 'codigo';
 
-    protected static ?string $navigationLabel = 'Semestres';
+    protected static ?string $navigationLabel = 'Periodos Académicos';
 
-    protected static ?string $pluralModelLabel = 'Semestres';
+    protected static ?string $pluralModelLabel = 'Periodos Académicos';
 
-    protected static ?string $modelLabel = 'Semestre';
+    protected static ?string $modelLabel = 'Periodo Académico';
 
     public static function form(Schema $schema): Schema
     {
         return $schema->components([
-            TextInput::make('nombre')
-                ->label('Nombre del Semestre')
-                ->placeholder('Ej: 2025-I, 2025-II')
+            TextInput::make('codigo')
+                ->label('Código del Periodo')
+                ->placeholder('Ej: PR26-2')
                 ->required()
                 ->maxLength(100),
+            DatePicker::make('fecha_inicio')
+                ->label('Fecha de Inicio')
+                ->required(),
+            DatePicker::make('fecha_fin')
+                ->label('Fecha de Fin')
+                ->required(),
             Toggle::make('activo')
-                ->label('Semestre Activo')
-                ->helperText('Solo un semestre debe estar activo a la vez.')
+                ->label('Periodo Activo')
+                ->helperText('Solo un periodo debe estar activo a la vez.')
                 ->default(false),
         ]);
     }
@@ -49,9 +56,17 @@ class SemestreResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('nombre')
-                    ->label('Semestre')
+                TextColumn::make('codigo')
+                    ->label('Periodo')
                     ->searchable()
+                    ->sortable(),
+                TextColumn::make('fecha_inicio')
+                    ->label('Inicio')
+                    ->date('d/m/Y')
+                    ->sortable(),
+                TextColumn::make('fecha_fin')
+                    ->label('Fin')
+                    ->date('d/m/Y')
                     ->sortable(),
                 IconColumn::make('activo')
                     ->label('Activo')
@@ -65,7 +80,7 @@ class SemestreResource extends Resource
                     ->dateTime('d/m/Y')
                     ->sortable(),
             ])
-            ->defaultSort('nombre', 'desc');
+            ->defaultSort('codigo', 'desc');
     }
 
     public static function getRelations(): array
