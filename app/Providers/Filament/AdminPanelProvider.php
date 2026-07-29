@@ -24,6 +24,23 @@ class AdminPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
     {
+        $config = null;
+        try {
+            if (\Illuminate\Support\Facades\Schema::hasTable('configuracions')) {
+                $config = \App\Models\Configuracion::first();
+            }
+        } catch (\Exception $e) {
+            // Ignore if DB not ready
+        }
+
+        $primaryColor = $config && $config->color_principal ? Color::hex($config->color_principal) : Color::Blue;
+
+        if ($config) {
+            if ($config->nombre) $panel->brandName($config->nombre);
+            if ($config->logo) $panel->brandLogo(asset('storage/' . $config->logo));
+            if ($config->favicon) $panel->favicon(asset('storage/' . $config->favicon));
+        }
+
         return $panel
             ->default()
             ->id('admin')
@@ -31,7 +48,7 @@ class AdminPanelProvider extends PanelProvider
             ->viteTheme('resources/css/filament/admin/theme.css')
             ->login()
             ->colors([
-                'primary' => Color::Blue,
+                'primary' => $primaryColor,
             ])
             ->font('Inter')
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')

@@ -12,10 +12,15 @@ class JornadaParametro extends Model
     protected $table = 'jornada_parametros';
 
     protected $fillable = [
-        'tipo_jornada',
+        'tipo_jornada_id',
         'duracion_bloque_minutos',
         'duracion_receso_minutos',
         'hora_inicio',
         'hora_fin',
     ];
+
+    public function tipoJornada()
+    {
+        return $this->belongsTo(TipoJornada::class);
+    }
 }

@@ -24,7 +24,7 @@ class JornadaParametroResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedClock;
 
-    protected static ?string $recordTitleAttribute = 'tipo_jornada';
+    protected static ?string $recordTitleAttribute = 'tipo_jornada_id';
 
     protected static ?string $navigationLabel = 'Parámetros de Jornada';
 
@@ -37,13 +37,16 @@ class JornadaParametroResource extends Resource
     public static function form(Schema $schema): Schema
     {
         return $schema->components([
-            Select::make('tipo_jornada')
+            Select::make('tipo_jornada_id')
                 ->label('Tipo de Jornada')
-                ->options([
-                    'Semana' => 'Semana (Lunes a Viernes)',
-                    'Sabatino' => 'Sabatino',
-                ])
+                ->relationship('tipoJornada', 'nombre')
                 ->required()
+                ->createOptionForm([
+                    TextInput::make('nombre')
+                        ->required()
+                        ->unique()
+                        ->label('Nombre del Tipo de Jornada'),
+                ])
                 ->unique(ignoreRecord: true),
 
             TextInput::make('duracion_bloque_minutos')
@@ -76,7 +79,7 @@ class JornadaParametroResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('tipo_jornada')
+                TextColumn::make('tipoJornada.nombre')
                     ->label('Jornada')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
@@ -111,8 +114,7 @@ class JornadaParametroResource extends Resource
                     ->label('Creado')
                     ->dateTime('d/m/Y')
                     ->sortable(),
-            ])
-            ->defaultSort('tipo_jornada', 'asc');
+            ]);
     }
 
     public static function getRelations(): array
