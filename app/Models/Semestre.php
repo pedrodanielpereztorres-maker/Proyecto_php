@@ -2,17 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
-
-class Semestre extends Model
+/**
+ * Class Semestre
+ * @deprecated Utilizar App\Models\PeriodoAcademico
+ */
+class Semestre extends PeriodoAcademico
 {
-    use HasFactory;
-
-    protected $fillable = ['nombre', 'activo'];
-
-    public function horarios()
-    {
-        return $this->hasMany(Horario::class);
-    }
+    protected $table = 'periodos_academicos';
 }
