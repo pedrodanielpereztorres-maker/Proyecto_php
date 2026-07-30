@@ -10,6 +10,7 @@ use BackedEnum;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Schemas\Components\Section;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
@@ -38,37 +39,54 @@ class PeriodoAcademicoResource extends Resource
     public static function form(Schema $schema): Schema
     {
         return $schema->components([
-            TextInput::make('codigo')
-                ->label('Código del Período')
-                ->placeholder('Ej: PR26-2')
-                ->required()
-                ->maxLength(100)
-                ->unique(ignoreRecord: true),
+            Section::make('Configuración del Período')
+                ->description('Establece los parámetros y fechas de este ciclo académico.')
+                ->icon('heroicon-o-calendar')
+                ->columnSpanFull()
+                ->schema([
+                    TextInput::make('codigo')
+                        ->label('Código del Período')
+                        ->placeholder('Ej: PR26-2')
+                        ->helperText('Identificador único oficial.')
+                        ->prefixIcon('heroicon-m-hashtag')
+                        ->required()
+                        ->maxLength(100)
+                        ->unique(ignoreRecord: true),
+                        
+                    \Filament\Forms\Components\Select::make('estado')
+                        ->label('Estado del Período')
+                        ->options([
+                            'planificacion' => 'En Planificación',
+                            'curso' => 'En Curso',
+                            'cerrado' => 'Cerrado',
+                        ])
+                        ->native(false)
+                        ->prefixIcon('heroicon-m-flag')
+                        ->default('planificacion')
+                        ->required(),
 
-            DatePicker::make('fecha_inicio')
-                ->label('Fecha de Inicio')
-                ->native(false),
+                    DatePicker::make('fecha_inicio')
+                        ->label('Fecha de Inicio')
+                        ->required()
+                        ->native(false),
 
-            DatePicker::make('fecha_fin')
-                ->label('Fecha de Fin')
-                ->native(false),
+                    DatePicker::make('fecha_fin')
+                        ->label('Fecha de Fin')
+                        ->required()
+                        ->afterOrEqual('fecha_inicio')
+                        ->native(false)
+                        ->helperText('Debe ser igual o posterior a la fecha de inicio.'),
 
-            \Filament\Schemas\Components\Select::make('estado')
-                ->label('Estado del Período')
-                ->options([
-                    'planificacion' => 'En Planificación',
-                    'curso' => 'En Curso',
-                    'cerrado' => 'Cerrado',
+                    TextInput::make('duracion_semanas')
+                        ->label('Duración aproximada')
+                        ->suffix('semanas')
+                        ->numeric()
+                        ->default(16)
+                        ->minValue(1)
+                        ->maxValue(52)
+                        ->required(),
                 ])
-                ->default('planificacion')
-                ->required(),
-
-            \Filament\Schemas\Components\TextInput::make('duracion_semanas')
-                ->label('Duración (Semanas)')
-                ->numeric()
-                ->default(16)
-                ->minValue(1)
-                ->required(),
+                ->columns(2),
         ]);
     }
 

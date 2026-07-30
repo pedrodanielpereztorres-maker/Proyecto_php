@@ -30,6 +30,7 @@ class EspecialidadResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'nombre';
 
+    protected static ?string $slug = 'especialidades';
     public static function form(Schema $schema): Schema
     {
         return EspecialidadForm::configure($schema);

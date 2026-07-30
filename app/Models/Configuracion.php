@@ -13,6 +13,7 @@ class Configuracion extends Model
         'nombre',
         'siglas',
         'logo',
+        'logo_url',
         'favicon',
         'color_principal'
     ];

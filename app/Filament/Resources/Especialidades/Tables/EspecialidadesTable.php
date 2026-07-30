@@ -15,16 +15,33 @@ class EspecialidadesTable
         return $table
             ->columns([
                 TextColumn::make('nombre')
-                    ->label('Nombre')
+                    ->label('Especialidad')
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->weight(\Filament\Support\Enums\FontWeight::Bold)
+                    ->icon('heroicon-o-sparkles'),
+                    
                 TextColumn::make('carrera.nombre')
-                    ->label('Carrera')
+                    ->label('Carrera Asociada')
                     ->searchable()
-                    ->sortable(),
+                    ->sortable()
+                    ->badge()
+                    ->color('info')
+                    ->icon('heroicon-o-academic-cap')
+                    ->placeholder('Sin Carrera'),
+                    
                 IconColumn::make('activo')
-                    ->label('Activo')
-                    ->boolean(),
-            ]);
+                    ->label('Estado')
+                    ->boolean()
+                    ->alignCenter()
+                    ->tooltip('¿Está disponible para asignarse a docentes?'),
+                    
+                TextColumn::make('created_at')
+                    ->label('Fecha de Creación')
+                    ->dateTime('d/m/Y h:i A')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+            ])
+            ->defaultSort('nombre', 'asc');
     }
 }

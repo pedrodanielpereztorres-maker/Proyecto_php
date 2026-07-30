@@ -37,7 +37,15 @@ class AdminPanelProvider extends PanelProvider
 
         if ($config) {
             if ($config->nombre) $panel->brandName($config->nombre);
-            if ($config->logo) $panel->brandLogo(asset('storage/' . $config->logo));
+            
+            if ($config->logo_url) {
+                $panel->brandLogo($config->logo_url);
+                $panel->brandLogoHeight('3.5rem'); // Aumentar tamaño
+            } elseif ($config->logo) {
+                $panel->brandLogo(asset('storage/' . $config->logo));
+                $panel->brandLogoHeight('3.5rem'); // Aumentar tamaño
+            }
+            
             if ($config->favicon) $panel->favicon(asset('storage/' . $config->favicon));
         }
 
@@ -45,6 +53,11 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
+            ->globalSearch(false)
+            ->renderHook(
+                \Filament\View\PanelsRenderHook::USER_MENU_BEFORE,
+                fn (): string => view('filament.hooks.header-clock'),
+            )
             ->viteTheme('resources/css/filament/admin/theme.css')
             ->login()
             ->colors([

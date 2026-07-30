@@ -34,3 +34,21 @@ Sistema de Gestión de Horarios Académicos para IUTEPI estructurado en 5 Fases.
   - Recesos flotantes (pausas de 20-30 min a demanda).
   - Asignación continua (previsualización de horas consecutivas del docente).
   - Validación inteligente y flexible: Filtro de aulas por `cantidad_alumnos` vs `capacidad_maxima` + compatibilidad `tipo_espacio_id`, con Toggle "Ignorar límite" y advertencia visual. Modelo: `Horario`.
+
+---
+
+## 🎨 Reglas Obligatorias de Diseño UI/UX (Filament)
+De ahora en adelante, al generar o modificar un Recurso de Filament (Tablas y Formularios), el agente **debe** aplicar las siguientes reglas para mantener una estética premium y consistente:
+
+### 1. Formularios (Forms)
+- **Ancho Completo:** Toda `Section` principal debe ocupar el ancho de la pantalla agregando `->columnSpanFull()`.
+- **Organización:** Utilizar `->columns(2)` u otra distribución dentro de las secciones para agrupar campos de manera inteligente.
+- **Ayudas Visuales:** Todo campo debe llevar un `->placeholder('Ej:...')` y un `->helperText('...')` explicativo. 
+- **Iconografía:** Usar `->prefixIcon('heroicon-m-...')` en los inputs relevantes, y `->icon()` en las secciones.
+- **Selects Elegantes:** A todo componente `Select` se le debe agregar `->native(false)` para habilitar el buscador moderno estilizado por Filament.
+
+### 2. Tablas (Tables)
+- **Destacar lo Principal:** La primera columna de texto (el identificador o nombre principal) debe estar en negrita usando `->weight(\Filament\Support\Enums\FontWeight::Bold)` y llevar un ícono si aplica.
+- **Etiquetas Visuales:** Los campos de categoría, relaciones cortas o estados deben mostrarse como etiquetas usando `->badge()` y `->color('info')` (o el color que corresponda).
+- **Alineación:** Las columnas booleanas (como Activo) o de acciones cortas deben estar centradas `->alignCenter()`.
+- **Traducción Perfecta:** Si el plural de la palabra en español genera un error de ruteo en Filament (ej. "Especialidads"), se debe declarar explícitamente `protected static ?string $slug = 'especialidades';` en el Resource.

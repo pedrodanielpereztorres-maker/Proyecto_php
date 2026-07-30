@@ -30,6 +30,7 @@ class NivelAcademicoResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'nombre';
 
+    protected static ?string $slug = 'niveles-academicos';
     public static function form(Schema $schema): Schema
     {
         return NivelAcademicoForm::configure($schema);

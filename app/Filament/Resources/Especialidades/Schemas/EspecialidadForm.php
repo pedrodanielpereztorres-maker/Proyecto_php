@@ -18,23 +18,39 @@ class EspecialidadForm
     {
         return $schema->components([
             Section::make('Datos de la especialidad')
+                ->description('Información de la especialidad o mención académica.')
+                ->icon('heroicon-o-sparkles')
+                ->columnSpanFull()
                 ->schema([
                     TextInput::make('nombre')
-                        ->label('Nombre')
+                        ->label('Nombre de la especialidad')
+                        ->placeholder('Ej: Análisis de Sistemas')
+                        ->helperText('Nombre completo de la especialidad o mención.')
+                        ->prefixIcon('heroicon-m-sparkles')
                         ->required()
-                        ->maxLength(255),
+                        ->maxLength(255)
+                        ->columnSpanFull(),
+                        
                     Textarea::make('descripcion')
                         ->label('Descripción')
+                        ->placeholder('Breve descripción del perfil (opcional)...')
+                        ->helperText('Información adicional o perfil del egresado.')
                         ->rows(3)
                         ->columnSpanFull(),
+                        
                     Select::make('carrera_id')
-                        ->label('Carrera')
+                        ->label('Carrera Asociada')
                         ->options(Carrera::query()->pluck('nombre', 'id'))
                         ->searchable()
                         ->preload()
-                        ->nullable(),
+                        ->nullable()
+                        ->prefixIcon('heroicon-m-academic-cap')
+                        ->helperText('Carrera madre a la que pertenece (si aplica).'),
+                        
                     Toggle::make('activo')
-                        ->label('Activo')
+                        ->label('Estado de operatividad')
+                        ->helperText('Habilitar o deshabilitar esta especialidad para nuevas asignaciones.')
+                        ->inline(false)
                         ->default(true),
                 ])
                 ->columns(2),

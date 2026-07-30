@@ -47,32 +47,50 @@ class AjustesSistema extends Page implements HasForms
             ->components([
                 Section::make('Información General')
                     ->description('Configura el nombre y siglas de la institución.')
+                    ->icon('heroicon-o-building-library')
+                    ->columnSpanFull()
                     ->schema([
                         TextInput::make('nombre')
                             ->label('Nombre de la Institución')
+                            ->placeholder('Ej: Instituto Universitario...')
+                            ->prefixIcon('heroicon-m-building-office-2')
                             ->required()
                             ->maxLength(255),
                         TextInput::make('siglas')
                             ->label('Siglas')
+                            ->placeholder('Ej: IUTEPI')
+                            ->prefixIcon('heroicon-m-tag')
                             ->required()
                             ->maxLength(255),
                     ])->columns(2),
 
                 Section::make('Apariencia y Marca')
-                    ->description('Sube los logos y define el color principal.')
+                    ->description('Sube los logos, define la URL alternativa y el color principal.')
+                    ->icon('heroicon-o-swatch')
+                    ->columnSpanFull()
                     ->schema([
                         FileUpload::make('logo')
-                            ->label('Logo Principal')
+                            ->label('Logo Principal (Archivo)')
+                            ->helperText('Sube un archivo de imagen local.')
                             ->image()
                             ->directory('identidad'),
+                        TextInput::make('logo_url')
+                            ->label('URL del Logo (Alternativo)')
+                            ->placeholder('https://...')
+                            ->prefixIcon('heroicon-m-link')
+                            ->helperText('Prioridad sobre el archivo si se especifica.')
+                            ->url()
+                            ->maxLength(255),
                         FileUpload::make('favicon')
                             ->label('Favicon (Icono de pestaña)')
+                            ->helperText('Icono pequeño para el navegador.')
                             ->image()
                             ->directory('identidad'),
                         ColorPicker::make('color_principal')
                             ->label('Color Principal del Sistema')
+                            ->helperText('Define el color de la interfaz.')
                             ->required(),
-                    ])->columns(3),
+                    ])->columns(2),
             ])
             ->statePath('data');
     }
