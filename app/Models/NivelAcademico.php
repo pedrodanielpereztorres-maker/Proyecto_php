@@ -8,14 +8,20 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class Departamento extends Model
+class NivelAcademico extends Model
 {
     use HasFactory;
 
+    protected $table = 'niveles_academicos';
+
     protected $fillable = [
         'nombre',
-        'descripcion',
+        'siglas',
         'activo',
+    ];
+
+    protected $casts = [
+        'activo' => 'boolean',
     ];
 
     public function carreras(): HasMany

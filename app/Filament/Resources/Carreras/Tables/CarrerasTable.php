@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Filament\Resources\Carreras\Tables;
 
 use Filament\Actions\BulkActionGroup;
@@ -14,20 +16,22 @@ class CarrerasTable
     {
         return $table
             ->columns([
-                TextColumn::make('nombre')
+                TextColumn::make('codigo')
+                    ->label('Código')
                     ->searchable()
                     ->sortable(),
-                TextColumn::make('created_at')
-                    ->dateTime()
+                TextColumn::make('nombre')
+                    ->label('Nombre')
+                    ->searchable()
+                    ->sortable(),
+                TextColumn::make('nivelAcademico.nombre')
+                    ->label('Nivel Académico')
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('updated_at')
-                    ->dateTime()
+                    ->searchable(),
+                TextColumn::make('departamento.nombre')
+                    ->label('Departamento')
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-            ])
-            ->filters([
-                //
+                    ->searchable(),
             ])
             ->recordActions([
                 EditAction::make(),
