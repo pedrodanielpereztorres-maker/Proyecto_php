@@ -6,20 +6,20 @@ use Filament\Pages\Page;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Components\Select;
-use App\Models\Aula;
+use App\Models\Espacio;
 use App\Models\Horario;
 
-class DisponibilidadAulas extends Page implements HasForms
+class DisponibilidadEspacios extends Page implements HasForms
 {
     use InteractsWithForms;
 
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-building-office';
-    protected static ?string $navigationLabel = 'Disponibilidad de Aulas';
-    protected static ?string $title = 'Disponibilidad de Aulas';
+    protected static ?string $navigationLabel = 'Disponibilidad de Espacios';
+    protected static ?string $title = 'Disponibilidad de Espacios';
 
-    protected string $view = 'filament.pages.disponibilidad-aulas';
+    protected string $view = 'filament.pages.disponibilidad-espacios';
 
-    public ?int $aula_id = null;
+    public ?int $espacio_id = null;
     public ?int $semestre_id = null;
 
     public function form(\Filament\Schemas\Schema $schema): \Filament\Schemas\Schema
@@ -32,22 +32,22 @@ class DisponibilidadAulas extends Page implements HasForms
                     ->default(fn () => \App\Models\PeriodoAcademico::where('estado', 'curso')->orWhere('estado', 'planificacion')->value('id'))
                     ->reactive()
                     ->placeholder('Seleccionar período'),
-                Select::make('aula_id')
-                    ->label('Aula')
-                    ->options(Aula::pluck('codigo', 'id'))
+                Select::make('espacio_id')
+                    ->label('Espacio')
+                    ->options(Espacio::pluck('codigo', 'id'))
                     ->reactive()
-                    ->placeholder('Seleccionar aula'),
+                    ->placeholder('Seleccionar espacio'),
             ]);
     }
 
     public function getHorariosProperty()
     {
-        if (! $this->aula_id) {
+        if (! $this->espacio_id) {
             return collect();
         }
 
         return Horario::with(['materia.carrera', 'profesor', 'semestre'])
-            ->where('aula_id', $this->aula_id)
+            ->where('espacio_id', $this->espacio_id)
             ->when($this->semestre_id, fn ($q) => $q->where('semestre_id', $this->semestre_id))
             ->orderBy('semestre_id')
             ->orderByRaw("CASE dia_semana

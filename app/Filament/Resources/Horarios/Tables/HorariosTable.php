@@ -45,8 +45,8 @@ class HorariosTable
                         ($record->profesor?->nombre ?? '') . ' ' . ($record->profesor?->apellido ?? '')
                     )
                     ->searchable(),
-                TextColumn::make('aula.codigo')
-                    ->label('Aula')
+                TextColumn::make('espacio.codigo')
+                    ->label('Espacio')
                     ->badge()
                     ->sortable(),
                 TextColumn::make('materia.carrera.nombre')

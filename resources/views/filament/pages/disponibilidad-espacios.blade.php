@@ -4,13 +4,13 @@
     <div class="rounded-xl bg-white dark:bg-gray-900 shadow-sm ring-1 ring-gray-200 dark:ring-white/10 p-5">
         <p class="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-4">Filtros</p>
         <form wire:submit.prevent>{{ $this->form }}</form>
-        <p class="mt-2 text-xs text-gray-400">El semestre es opcional. Si no lo seleccionas, se muestran todos los horarios del aula.</p>
+        <p class="mt-2 text-xs text-gray-400">El semestre es opcional. Si no lo seleccionas, se muestran todos los horarios del espacio.</p>
     </div>
 
-    @if($this->aula_id)
+    @if($this->espacio_id)
         @php
             $horarios = $this->getHorariosProperty();
-            $aula     = \App\Models\Aula::find($this->aula_id);
+            $espacio  = \App\Models\Espacio::find($this->espacio_id);
             $sem      = $this->semestre_id ? \App\Models\Semestre::find($this->semestre_id) : null;
             $libre    = $horarios->isEmpty();
         @endphp
@@ -20,10 +20,10 @@
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                     <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
-                        Aula <span class="text-primary-600 dark:text-primary-400">{{ $aula?->codigo }}</span>
+                        Espacio <span class="text-primary-600 dark:text-primary-400">{{ $espacio?->codigo }}</span>
                     </h2>
                     <p class="text-sm text-gray-500 mt-2">
-                        {{ $aula?->tipo }} &middot; Capacidad {{ $aula?->capacidad }}
+                        {{ $espacio?->tipoEspacio?->nombre }} &middot; Capacidad {{ $espacio?->capacidad_maxima }}
                         @if($sem)
                             &mdash; Semestre: <strong class="text-gray-900 dark:text-white">{{ $sem->nombre }}</strong>
                         @endif
@@ -50,7 +50,7 @@
         {{-- ─── Tabla o mensaje vacío ──────────────────────────── --}}
         @if($libre)
             <div class="mt-4 rounded-xl bg-white dark:bg-gray-900 ring-1 ring-gray-200 dark:ring-white/10 py-10 text-center text-gray-500 dark:text-gray-400">
-                Esta aula no tiene ningún horario asignado{{ $sem ? ' en el semestre ' . $sem->nombre : '' }}.
+                Este espacio no tiene ningún horario asignado{{ $sem ? ' en el semestre ' . $sem->nombre : '' }}.
             </div>
         @else
             <div class="mt-4 rounded-xl overflow-hidden ring-1 ring-gray-200 dark:ring-white/10">
@@ -108,7 +108,7 @@
     @else
         {{-- ─── Estado inicial sin ícono grande ────────────────── --}}
         <div class="mt-6 rounded-xl bg-white dark:bg-gray-900 ring-1 ring-gray-200 dark:ring-white/10 py-12 text-center">
-            <p class="text-base font-semibold text-gray-700 dark:text-gray-300">Selecciona un Aula</p>
+            <p class="text-base font-semibold text-gray-700 dark:text-gray-300">Selecciona un Espacio</p>
             <p class="text-sm text-gray-400 mt-1">Elige un aula (y opcionalmente un semestre) para ver su ocupación y disponibilidad.</p>
         </div>
     @endif

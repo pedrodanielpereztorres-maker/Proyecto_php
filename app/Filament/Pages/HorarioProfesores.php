@@ -50,7 +50,7 @@ class HorarioProfesores extends Page implements HasForms
             return collect();
         }
 
-        return Horario::with(['materia.carrera', 'aula', 'semestre'])
+        return Horario::with(['materia.carrera', 'espacio', 'semestre'])
             ->where('profesor_id', $this->profesor_id)
             ->when($this->semestre_id, fn ($q) => $q->where('semestre_id', $this->semestre_id))
             ->orderByRaw("CASE dia_semana

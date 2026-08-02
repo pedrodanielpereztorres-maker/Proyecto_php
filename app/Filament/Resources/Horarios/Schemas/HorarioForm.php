@@ -30,9 +30,9 @@ class HorarioForm
                     ->preload()
                     ->searchable()
                     ->required(),
-                Select::make('aula_id')
-                    ->label('Aula')
-                    ->relationship('aula', 'codigo')
+                Select::make('espacio_id')
+                    ->label('Espacio')
+                    ->relationship('espacio', 'codigo')
                     ->preload()
                     ->searchable()
                     ->required(),

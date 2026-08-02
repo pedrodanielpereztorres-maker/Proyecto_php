@@ -11,8 +11,8 @@ class TipoEspacio extends Model
 
     protected $fillable = ['nombre', 'descripcion'];
 
-    public function aulas()
+    public function espacios()
     {
-        return $this->hasMany(Aula::class);
+        return $this->hasMany(Espacio::class);
     }
 }

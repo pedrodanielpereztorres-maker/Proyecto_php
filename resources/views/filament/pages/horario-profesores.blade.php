@@ -45,7 +45,7 @@
                             <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Horario</th>
                             <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Materia (Código)</th>
                             <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Carrera</th>
-                            <th class="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-gray-500">Aula</th>
+                            <th class="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-gray-500">Espacio</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100 dark:divide-white/5">
@@ -77,10 +77,10 @@
                                 <td class="px-4 py-3 text-gray-600 dark:text-gray-300">
                                     {{ $h->materia?->carrera?->nombre ?? '—' }}
                                 </td>
-                                {{-- Aula --}}
+                                {{-- Espacio --}}
                                 <td class="px-4 py-3 text-center">
                                     <span class="inline-block px-2.5 py-0.5 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-xs font-bold ring-1 ring-gray-200 dark:ring-gray-700">
-                                        {{ $h->aula?->codigo ?? '—' }}
+                                        {{ $h->espacio?->codigo ?? '—' }}
                                     </span>
                                 </td>
                             </tr>
