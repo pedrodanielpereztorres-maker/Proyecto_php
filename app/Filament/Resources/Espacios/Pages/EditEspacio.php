@@ -1,14 +1,14 @@
 <?php
 
-namespace App\Filament\Resources\Aulas\Pages;
+namespace App\Filament\Resources\Espacios\Pages;
 
-use App\Filament\Resources\Aulas\AulaResource;
+use App\Filament\Resources\Espacios\EspacioResource;
 use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
 
-class EditAula extends EditRecord
+class EditEspacio extends EditRecord
 {
-    protected static string $resource = AulaResource::class;
+    protected static string $resource = EspacioResource::class;
 
     protected function getHeaderActions(): array
     {

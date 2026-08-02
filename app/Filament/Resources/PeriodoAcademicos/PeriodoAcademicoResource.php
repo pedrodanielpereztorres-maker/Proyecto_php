@@ -26,13 +26,17 @@ class PeriodoAcademicoResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCalendarDays;
 
+    protected static ?string $slug = 'periodos-academicos';
+
     protected static ?string $recordTitleAttribute = 'codigo';
 
-    protected static ?string $navigationLabel = 'Periodos Académicos';
+    protected static ?string $navigationLabel = 'Períodos Académicos';
 
-    protected static ?string $pluralModelLabel = 'Periodos Académicos';
+    protected static ?string $pluralModelLabel = 'Períodos Académicos';
 
-    protected static ?string $modelLabel = 'Periodo Académico';
+    protected static ?string $modelLabel = 'Período Académico';
+
+    protected static ?int $navigationSort = 2;
 
     protected static UnitEnum|string|null $navigationGroup = 'Configuración Global';
 

@@ -13,7 +13,7 @@ class Horario extends Model
     protected $fillable = [
         'materia_id',
         'profesor_id',
-        'aula_id',
+        'espacio_id',
         'periodo_academico_id',
         'semestre_id', // Para compatibilidad
         'dia_semana',
@@ -41,7 +41,7 @@ class Horario extends Model
     }
 
     /**
-     * Valida que no exista un choque de horario para el profesor ni para el aula
+     * Valida que no exista un choque de horario para el profesor ni para el espacio
      * dentro del mismo período académico, día y rango de horas.
      */
     protected static function validarSinChoques(Horario $horario): void
@@ -65,20 +65,20 @@ class Horario extends Model
             ]);
         }
 
-        $conflictoAula = static::where(function ($q) use ($periodoId) {
+        $conflictoEspacio = static::where(function ($q) use ($periodoId) {
                 $q->where('periodo_academico_id', $periodoId)
                   ->orWhere('semestre_id', $periodoId);
             })
             ->where('dia_semana', $horario->dia_semana)
-            ->where('aula_id', $horario->aula_id)
+            ->where('espacio_id', $horario->espacio_id)
             ->where('id', '!=', $horario->id ?? 0)
             ->where('hora_inicio', '<', $horario->hora_fin)
             ->where('hora_fin', '>', $horario->hora_inicio)
             ->exists();
 
-        if ($conflictoAula) {
+        if ($conflictoEspacio) {
             throw ValidationException::withMessages([
-                'aula_id' => 'El aula ya está ocupada en ese día y rango de horas para este período académico.',
+                'espacio_id' => 'El espacio ya está ocupado en ese día y rango de horas para este período académico.',
             ]);
         }
     }
@@ -95,9 +95,9 @@ class Horario extends Model
         return $this->belongsTo(Profesor::class);
     }
 
-    public function aula()
+    public function espacio()
     {
-        return $this->belongsTo(Aula::class);
+        return $this->belongsTo(Espacio::class);
     }
 
     public function periodoAcademico()

@@ -18,11 +18,11 @@ Sistema de Gestión de Horarios Académicos para IUTEPI estructurado en 5 Fases.
 - **Carreras:** Código (ej: SIS) y nombre. Modelo: `Carrera`.
 
 ### Fase 2: Gestión de Infraestructura (Espacios Físicos)
-- **Espacios:** Nombre, `tipo_espacio_id`, `capacidad_maxima`, `estatus_operativo`. Modelo: `Espacio` / `Aula`.
+- **Espacios:** Nombre, `tipo_espacio_id`, `capacidad_maxima`, `estatus_operativo`. Modelo: `Espacio`.
 
 ### Fase 3: Gestión Académica (Pénsum y Estudiantes)
 - **Materias (Pénsum):** Código (ej: AS515), nombre, horas semanales, semestre (1 al 6), `tipo_espacio_id` obligatorio. Importador masivo CSV mediante Filament Actions. Modelo: `Materia`.
-- **Secciones:** Periodo, Turno, Carrera, Semestre, Nomenclatura (ej: SM5), `cantidad_alumnos` (para cruzar con capacidad del aula). Modelo: `Seccion`.
+- **Secciones:** Periodo, Turno, Carrera, Semestre, Nomenclatura (ej: SM5), `cantidad_alumnos` (para cruzar con capacidad del espacio). Modelo: `Seccion`.
 
 ### Fase 4: Gestión de Talento Humano (Docentes)
 - **Profesores:** Código interno, cédula, nombres, dirección, teléfono, correo, `nivel_academico_id`, `especialidad_id`, foto de perfil (avatar). Modelo: `Profesor`.
@@ -33,7 +33,7 @@ Sistema de Gestión de Horarios Académicos para IUTEPI estructurado en 5 Fases.
 - **Panel de Asignación Reactiva (Horario):**
   - Recesos flotantes (pausas de 20-30 min a demanda).
   - Asignación continua (previsualización de horas consecutivas del docente).
-  - Validación inteligente y flexible: Filtro de aulas por `cantidad_alumnos` vs `capacidad_maxima` + compatibilidad `tipo_espacio_id`, con Toggle "Ignorar límite" y advertencia visual. Modelo: `Horario`.
+  - Validación inteligente y flexible: Filtro de espacios por `cantidad_alumnos` vs `capacidad_maxima` + compatibilidad `tipo_espacio_id`, con Toggle "Ignorar límite" y advertencia visual. Modelo: `Horario`.
 
 ---
 

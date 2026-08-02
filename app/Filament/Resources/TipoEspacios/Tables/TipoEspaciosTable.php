@@ -22,9 +22,9 @@ class TipoEspaciosTable
                     ->label('Descripción')
                     ->limit(50),
 
-                TextColumn::make('aulas_count')
-                    ->label('Aulas asociadas')
-                    ->counts('aulas')
+                TextColumn::make('espacios_count')
+                    ->label('Espacios asociados')
+                    ->counts('espacios')
                     ->sortable(),
             ])
             ->filters([

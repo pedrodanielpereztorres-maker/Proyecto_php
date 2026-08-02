@@ -28,7 +28,7 @@ Registro de lugares de clase:
 ## 📌 Fase 3: Gestión Académica (Pénsum y Estudiantes)
 Estructura educativa y grupos:
 - **Módulo de Materias (Pénsum):** Código (Ej. AS515), nombre, horas semanales, semestre (1 al 6), `tipo_espacio_id` obligatorio. Integración de importador masivo CSV en Filament.
-- **Módulo de Secciones:** Periodo, Turno, Carrera, Semestre, Nomenclatura (Ej. SM5), `cantidad_alumnos` (clave para capacidad del aula).
+- **Módulo de Secciones:** Periodo, Turno, Carrera, Semestre, Nomenclatura (Ej. SM5), `cantidad_alumnos` (clave para capacidad del espacio).
 
 ---
 
