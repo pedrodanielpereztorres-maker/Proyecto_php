@@ -20,13 +20,17 @@ class DepartamentoResource extends Resource
 
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-building-office';
 
-    protected static ?string $pluralModelLabel = 'Departamentos';
-
-    protected static ?string $modelLabel = 'Departamento';
-
-    protected static string|\UnitEnum|null $navigationGroup = 'Configuración Global';
-
+    
+    
+    
     protected static ?string $recordTitleAttribute = 'nombre';
+    protected static ?string $navigationLabel = 'Departamentos';
+    protected static ?string $pluralModelLabel = 'Departamentos';
+    protected static ?string $modelLabel = 'Departamento';
+    protected static string|\UnitEnum|null $navigationGroup = 'Configuración del Sistema';
+    protected static ?int $navigationSort = 5;
+
+
 
     public static function form(Schema $schema): Schema
     {

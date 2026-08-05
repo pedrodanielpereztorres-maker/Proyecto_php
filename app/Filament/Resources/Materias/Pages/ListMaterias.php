@@ -17,7 +17,8 @@ class ListMaterias extends ListRecords
         return [
             ImportAction::make()
                 ->importer(MateriaImporter::class),
-            CreateAction::make(),
+            CreateAction::make()
+                ->label('Nueva Materia'),
         ];
     }
 }

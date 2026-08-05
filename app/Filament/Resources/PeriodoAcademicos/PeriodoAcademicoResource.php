@@ -29,17 +29,19 @@ class PeriodoAcademicoResource extends Resource
     protected static ?string $slug = 'periodos-academicos';
 
     protected static ?string $recordTitleAttribute = 'codigo';
-
     protected static ?string $navigationLabel = 'Períodos Académicos';
-
     protected static ?string $pluralModelLabel = 'Períodos Académicos';
-
     protected static ?string $modelLabel = 'Período Académico';
+    protected static string|\UnitEnum|null $navigationGroup = 'Configuración del Sistema';
+    protected static ?int $navigationSort = 1;
 
-    protected static ?int $navigationSort = 2;
 
-    protected static UnitEnum|string|null $navigationGroup = 'Configuración Global';
 
+    
+    
+    
+    
+    
     public static function form(Schema $schema): Schema
     {
         return $schema->components([

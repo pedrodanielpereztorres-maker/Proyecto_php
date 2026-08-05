@@ -2,10 +2,12 @@
 
 namespace App\Filament\Resources\Horarios\Schemas;
 
+use App\Models\PeriodoAcademico;
+use App\Models\Seccion;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\TimePicker;
 use Filament\Schemas\Schema;
-use App\Models\PeriodoAcademico;
 
 class HorarioForm
 {
@@ -13,10 +15,10 @@ class HorarioForm
     {
         return $schema
             ->components([
-                Select::make('semestre_id')
+                Select::make('periodo_academico_id')
                     ->label('Período Académico')
-                    ->options(PeriodoAcademico::orderBy('codigo', 'desc')->pluck('codigo', 'id'))
-                    ->default(fn () => PeriodoAcademico::where('estado', 'curso')->orWhere('estado', 'planificacion')->value('id'))
+                    ->options(fn () => PeriodoAcademico::query()->orderBy('codigo', 'desc')->pluck('codigo', 'id')->toArray())
+                    ->default(fn () => PeriodoAcademico::query()->whereIn('estado', ['curso', 'planificacion'])->orderByDesc('id')->value('id'))
                     ->required(),
                 Select::make('materia_id')
                     ->label('Materia')
@@ -36,6 +38,15 @@ class HorarioForm
                     ->preload()
                     ->searchable()
                     ->required(),
+                Select::make('seccion_id')
+                    ->label('Sección')
+                    ->relationship('seccion', 'codigo')
+                    ->preload()
+                    ->searchable()
+                    ->required(),
+                Toggle::make('omitir_validacion_capacidad')
+                    ->label('Omitir validación de capacidad')
+                    ->default(false),
                 Select::make('dia_semana')
                     ->label('Día de la Semana')
                     ->options([

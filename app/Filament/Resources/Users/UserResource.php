@@ -14,6 +14,7 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use UnitEnum;
 
 class UserResource extends Resource
@@ -23,15 +24,18 @@ class UserResource extends Resource
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUsers;
 
     protected static ?string $recordTitleAttribute = 'name';
-
     protected static ?string $navigationLabel = 'Usuarios';
-
     protected static ?string $pluralModelLabel = 'Usuarios';
-
     protected static ?string $modelLabel = 'Usuario';
+    protected static string|\UnitEnum|null $navigationGroup = 'Configuración del Sistema';
+    protected static ?int $navigationSort = 6;
 
-    protected static UnitEnum|string|null $navigationGroup = 'Administración';
 
+
+    
+    
+    
+    
     public static function form(Schema $schema): Schema
     {
         return $schema->components([
@@ -88,6 +92,11 @@ class UserResource extends Resource
                     ->sortable(),
             ])
             ->defaultSort('created_at', 'desc');
+    }
+
+        public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()->with(['roles']);
     }
 
     public static function getRelations(): array

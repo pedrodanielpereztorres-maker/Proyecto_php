@@ -9,52 +9,51 @@ return new class extends Migration
 {
     public function up(): void
     {
-        // Crear tabla espacios con la nueva estructura
-        Schema::create('espacios', function (Blueprint $table) {
-            $table->id();
-            $table->string('codigo')->unique();
-            $table->string('nombre')->unique();
-            $table->integer('capacidad_maxima');
-            $table->foreignId('tipo_espacio_id')
-                ->constrained('tipo_espacios')
-                ->onDelete('restrict');
-            $table->enum('estatus_operativo', ['activo', 'inactivo', 'mantenimiento'])
-                ->default('activo');
-            $table->timestamps();
-        });
-
-        // Copiar datos de aulas a espacios
-        $aulas = DB::table('aulas')->get();
-        foreach ($aulas as $aula) {
-            DB::table('espacios')->insert([
-                'id' => $aula->id,
-                'codigo' => $aula->codigo,
-                'nombre' => 'Espacio_' . $aula->codigo,
-                'capacidad_maxima' => $aula->capacidad,
-                'tipo_espacio_id' => $aula->tipo_espacio_id,
-                'estatus_operativo' => 'activo',
-                'created_at' => $aula->created_at,
-                'updated_at' => $aula->updated_at,
-            ]);
+        if (! Schema::hasTable('espacios')) {
+            Schema::create('espacios', function (Blueprint $table) {
+                $table->id();
+                $table->string('codigo')->unique();
+                $table->string('nombre')->unique();
+                $table->integer('capacidad_maxima');
+                $table->foreignId('tipo_espacio_id')
+                    ->constrained('tipo_espacios')
+                    ->onDelete('restrict');
+                $table->enum('estatus_operativo', ['activo', 'inactivo', 'mantenimiento'])
+                    ->default('activo');
+                $table->timestamps();
+            });
         }
 
-        // Actualizar FK en horarios: aula_id -> espacio_id
-        Schema::table('horarios', function (Blueprint $table) {
-            // Eliminar constraint anterior
-            $table->dropForeign('horarios_aula_id_foreign');
-            
-            // Renombrar columna
-            $table->renameColumn('aula_id', 'espacio_id');
-            
-            // Crear nuevo constraint
-            $table->foreign('espacio_id')
-                ->references('id')
-                ->on('espacios')
-                ->onDelete('cascade');
-        });
+        if (Schema::hasTable('aulas') && ! Schema::hasTable('espacios')) {
+            $aulas = DB::table('aulas')->get();
+            foreach ($aulas as $aula) {
+                DB::table('espacios')->insert([
+                    'id' => $aula->id,
+                    'codigo' => $aula->codigo,
+                    'nombre' => 'Espacio_' . $aula->codigo,
+                    'capacidad_maxima' => $aula->capacidad,
+                    'tipo_espacio_id' => $aula->tipo_espacio_id,
+                    'estatus_operativo' => 'activo',
+                    'created_at' => $aula->created_at,
+                    'updated_at' => $aula->updated_at,
+                ]);
+            }
+        }
 
-        // Eliminar tabla antigua
-        Schema::dropIfExists('aulas');
+        if (Schema::hasTable('horarios') && Schema::hasColumn('horarios', 'aula_id')) {
+            Schema::table('horarios', function (Blueprint $table) {
+                $table->dropForeign(['aula_id']);
+                $table->renameColumn('aula_id', 'espacio_id');
+                $table->foreign('espacio_id')
+                    ->references('id')
+                    ->on('espacios')
+                    ->onDelete('cascade');
+            });
+        }
+
+        if (Schema::hasTable('aulas')) {
+            Schema::dropIfExists('aulas');
+        }
     }
 
     public function down(): void

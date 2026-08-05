@@ -13,6 +13,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class ProfesorResource extends Resource
 {
@@ -21,6 +22,13 @@ class ProfesorResource extends Resource
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
     protected static ?string $recordTitleAttribute = 'nombre';
+    protected static ?string $navigationLabel = 'Profesores';
+    protected static ?string $pluralModelLabel = 'Profesores';
+    protected static ?string $modelLabel = 'Profesor';
+    protected static string|\UnitEnum|null $navigationGroup = 'Gestión Académica';
+    protected static ?int $navigationSort = 2;
+
+
 
     public static function form(Schema $schema): Schema
     {
@@ -30,6 +38,11 @@ class ProfesorResource extends Resource
     public static function table(Table $table): Table
     {
         return ProfesorsTable::configure($table);
+    }
+
+            public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()->with(['nivelAcademico', 'especialidad']);
     }
 
     public static function getRelations(): array

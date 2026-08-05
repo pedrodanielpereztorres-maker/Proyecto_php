@@ -11,9 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('configuracions', function (Blueprint $table) {
-            $table->string('logo_url')->nullable()->after('logo');
-        });
+        if (Schema::hasTable('configuracions') && ! Schema::hasColumn('configuracions', 'logo_url')) {
+            Schema::table('configuracions', function (Blueprint $table) {
+                $table->string('logo_url')->nullable()->after('logo');
+            });
+        }
     }
 
     /**

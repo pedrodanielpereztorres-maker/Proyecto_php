@@ -30,7 +30,7 @@ class Espacio extends Model
         return $this->hasMany(Horario::class);
     }
 
-    public function tipoEspacio()
+    public function tipoEspacio(): BelongsTo
     {
         return $this->belongsTo(TipoEspacio::class);
     }

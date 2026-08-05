@@ -15,6 +15,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class EspecialidadResource extends Resource
 {
@@ -22,13 +23,17 @@ class EspecialidadResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedSparkles;
 
-    protected static ?string $pluralModelLabel = 'Especialidades';
-
-    protected static ?string $modelLabel = 'Especialidad';
-
-    protected static string|\UnitEnum|null $navigationGroup = 'Gestión Académica';
-
+    
+    
+    
     protected static ?string $recordTitleAttribute = 'nombre';
+    protected static ?string $navigationLabel = 'Especialidades';
+    protected static ?string $pluralModelLabel = 'Especialidades';
+    protected static ?string $modelLabel = 'Especialidad';
+    protected static string|\UnitEnum|null $navigationGroup = 'Configuración del Sistema';
+    protected static ?int $navigationSort = 3;
+
+
 
     protected static ?string $slug = 'especialidades';
     public static function form(Schema $schema): Schema
@@ -39,6 +44,11 @@ class EspecialidadResource extends Resource
     public static function table(Table $table): Table
     {
         return EspecialidadesTable::configure($table);
+    }
+
+        public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()->with(['carrera']);
     }
 
     public static function getRelations(): array
