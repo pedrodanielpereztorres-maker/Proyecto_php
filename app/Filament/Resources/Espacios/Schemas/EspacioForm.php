@@ -2,7 +2,7 @@
 
 namespace App\Filament\Resources\Espacios\Schemas;
 
-use Filament\Forms\Components\Section;
+use Filament\Schemas\Components\Section;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Select;
 use Filament\Schemas\Schema;
@@ -25,7 +25,7 @@ class EspacioForm
                             ->helperText('Identificador único del espacio (ej: A101)')
                             ->prefixIcon('heroicon-m-hashtag')
                             ->required()
-                            ->unique(ignorable: true),
+                            ->unique(ignorable: fn ($record) => $record),
 
                         TextInput::make('nombre')
                             ->label('Nombre del Espacio')
@@ -33,7 +33,7 @@ class EspacioForm
                             ->helperText('Nombre descriptivo del espacio físico')
                             ->prefixIcon('heroicon-m-document-text')
                             ->required()
-                            ->unique(ignorable: true),
+                            ->unique(ignorable: fn ($record) => $record),
 
                         TextInput::make('capacidad_maxima')
                             ->label('Capacidad Máxima')
