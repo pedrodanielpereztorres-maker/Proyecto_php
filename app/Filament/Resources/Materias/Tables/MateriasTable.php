@@ -25,6 +25,14 @@ class MateriasTable
                     ->label('Carrera')
                     ->sortable()
                     ->searchable(),
+                TextColumn::make('semestre')
+                    ->sortable(),
+                TextColumn::make('horas_semanales')
+                    ->label('Horas semanales')
+                    ->sortable(),
+                TextColumn::make('tipoEspacio.nombre')
+                    ->label('Tipo de espacio')
+                    ->sortable(),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -34,9 +42,7 @@ class MateriasTable
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
-            ->filters([
-                //
-            ])
+            ->filters([])
             ->recordActions([
                 EditAction::make(),
             ])

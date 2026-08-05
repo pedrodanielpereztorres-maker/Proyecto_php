@@ -9,7 +9,15 @@ class Materia extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['codigo', 'nombre', 'creditos', 'carrera_id'];
+    protected $fillable = [
+        'codigo',
+        'nombre',
+        'creditos',
+        'carrera_id',
+        'horas_semanales',
+        'semestre',
+        'tipo_espacio_id',
+    ];
 
     public function carrera()
     {
@@ -19,5 +27,10 @@ class Materia extends Model
     public function horarios()
     {
         return $this->hasMany(Horario::class);
+    }
+
+    public function tipoEspacio()
+    {
+        return $this->belongsTo(TipoEspacio::class);
     }
 }
