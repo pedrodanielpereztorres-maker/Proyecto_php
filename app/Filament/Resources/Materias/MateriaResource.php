@@ -13,6 +13,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class MateriaResource extends Resource
 {
@@ -21,6 +22,13 @@ class MateriaResource extends Resource
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
     protected static ?string $recordTitleAttribute = 'nombre';
+    protected static ?string $navigationLabel = 'Materias';
+    protected static ?string $pluralModelLabel = 'Materias';
+    protected static ?string $modelLabel = 'Materia';
+    protected static string|\UnitEnum|null $navigationGroup = 'Gestión Académica';
+    protected static ?int $navigationSort = 5;
+
+
 
     public static function form(Schema $schema): Schema
     {
@@ -30,6 +38,11 @@ class MateriaResource extends Resource
     public static function table(Table $table): Table
     {
         return MateriasTable::configure($table);
+    }
+
+        public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()->with(['carrera']);
     }
 
     public static function getRelations(): array

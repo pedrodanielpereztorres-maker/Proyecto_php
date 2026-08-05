@@ -20,13 +20,17 @@ class TurnoResource extends Resource
 
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-sun';
 
-    protected static ?string $pluralModelLabel = 'Turnos';
-
-    protected static ?string $modelLabel = 'Turno';
-
-    protected static string|\UnitEnum|null $navigationGroup = 'Configuración Global';
-
+    
+    
+    
     protected static ?string $recordTitleAttribute = 'nombre';
+    protected static ?string $navigationLabel = 'Turnos';
+    protected static ?string $pluralModelLabel = 'Turnos';
+    protected static ?string $modelLabel = 'Turno';
+    protected static string|\UnitEnum|null $navigationGroup = 'Infraestructura';
+    protected static ?int $navigationSort = 3;
+
+
 
     public static function form(Schema $schema): Schema
     {

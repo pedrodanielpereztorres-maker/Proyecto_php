@@ -9,9 +9,15 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('materias', function (Blueprint $table) {
-            $table->integer('horas_semanales')->default(2);
-            $table->integer('semestre')->default(1);
-            $table->foreignId('tipo_espacio_id')->nullable()->constrained('tipo_espacios')->nullOnDelete();
+            if (! Schema::hasColumn('materias', 'horas_semanales')) {
+                $table->integer('horas_semanales')->default(2);
+            }
+            if (! Schema::hasColumn('materias', 'semestre')) {
+                $table->integer('semestre')->default(1);
+            }
+            if (! Schema::hasColumn('materias', 'tipo_espacio_id')) {
+                $table->foreignId('tipo_espacio_id')->nullable()->constrained('tipo_espacios')->nullOnDelete();
+            }
         });
     }
 

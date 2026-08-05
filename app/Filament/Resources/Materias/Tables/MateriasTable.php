@@ -44,11 +44,13 @@ class MateriasTable
             ])
             ->filters([])
             ->recordActions([
-                EditAction::make(),
+                EditAction::make()
+                    ->label('Editar'),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make(),
+                    DeleteBulkAction::make()
+                        ->label('Eliminar seleccionados'),
                 ]),
             ]);
     }

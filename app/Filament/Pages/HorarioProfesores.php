@@ -21,13 +21,13 @@ class HorarioProfesores extends Page implements HasForms
     protected string $view = 'filament.pages.horario-profesores';
 
     public ?int $profesor_id = null;
-    public ?int $semestre_id = null;
+    public ?int $periodo_academico_id = null;
 
     public function form(\Filament\Schemas\Schema $schema): \Filament\Schemas\Schema
     {
         return $schema
             ->components([
-                Select::make('semestre_id')
+                Select::make('periodo_academico_id')
                     ->label('Período Académico')
                     ->options(\App\Models\PeriodoAcademico::orderBy('codigo', 'desc')->pluck('codigo', 'id'))
                     ->default(fn () => \App\Models\PeriodoAcademico::where('estado', 'curso')->orWhere('estado', 'planificacion')->value('id'))
@@ -50,9 +50,9 @@ class HorarioProfesores extends Page implements HasForms
             return collect();
         }
 
-        return Horario::with(['materia.carrera', 'espacio', 'semestre'])
+        return Horario::with(['materia.carrera', 'espacio', 'periodoAcademico'])
             ->where('profesor_id', $this->profesor_id)
-            ->when($this->semestre_id, fn ($q) => $q->where('semestre_id', $this->semestre_id))
+            ->when($this->periodo_academico_id, fn ($q) => $q->where('periodo_academico_id', $this->periodo_academico_id))
             ->orderByRaw("CASE dia_semana
                 WHEN 'Lunes' THEN 1
                 WHEN 'Martes' THEN 2

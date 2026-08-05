@@ -13,6 +13,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class EspacioResource extends Resource
 {
@@ -21,10 +22,12 @@ class EspacioResource extends Resource
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
     protected static ?string $recordTitleAttribute = 'codigo';
+    protected static ?string $navigationLabel = 'Aulas y Espacios';
+    protected static ?string $pluralModelLabel = 'Aulas y Espacios';
+    protected static ?string $modelLabel = 'Espacio';
+    protected static string|\UnitEnum|null $navigationGroup = 'Infraestructura';
+    protected static ?int $navigationSort = 1;
 
-    protected static ?string $navigationLabel = 'Espacios';
-
-    protected static ?string $title = 'Espacios Físicos';
 
     public static function form(Schema $schema): Schema
     {
@@ -34,6 +37,11 @@ class EspacioResource extends Resource
     public static function table(Table $table): Table
     {
         return EspaciosTable::configure($table);
+    }
+
+        public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()->with(['tipoEspacio']);
     }
 
     public static function getRelations(): array

@@ -15,7 +15,8 @@ class EditHorario extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            DeleteAction::make(),
+            DeleteAction::make()
+                ->label('Eliminar Horario'),
         ];
     }
 
@@ -33,6 +34,8 @@ class EditHorario extends EditRecord
                 ->send();
 
             $this->halt();
+
+            return $record;
         }
     }
 }

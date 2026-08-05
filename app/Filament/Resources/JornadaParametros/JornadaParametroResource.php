@@ -15,6 +15,7 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 use UnitEnum;
 
@@ -25,15 +26,18 @@ class JornadaParametroResource extends Resource
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedClock;
 
     protected static ?string $recordTitleAttribute = 'tipo_jornada_id';
-
     protected static ?string $navigationLabel = 'Parámetros de Jornada';
-
     protected static ?string $pluralModelLabel = 'Parámetros de Jornada';
-
     protected static ?string $modelLabel = 'Parámetro de Jornada';
+    protected static string|\UnitEnum|null $navigationGroup = 'Configuración del Sistema';
+    protected static ?int $navigationSort = 2;
 
-    protected static UnitEnum|string|null $navigationGroup = 'Configuración Global';
 
+
+    
+    
+    
+    
     public static function form(Schema $schema): Schema
     {
         return $schema->components([
@@ -115,6 +119,11 @@ class JornadaParametroResource extends Resource
                     ->dateTime('d/m/Y')
                     ->sortable(),
             ]);
+    }
+
+        public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()->with(['tipoJornada']);
     }
 
     public static function getRelations(): array

@@ -21,11 +21,16 @@ class TipoEspacioResource extends Resource
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedTag;
 
     protected static ?string $recordTitleAttribute = 'nombre';
-
-    protected static ?string $modelLabel = 'Tipo de Espacio';
-
+    protected static ?string $navigationLabel = 'Tipos de Espacio';
     protected static ?string $pluralModelLabel = 'Tipos de Espacio';
+    protected static ?string $modelLabel = 'Tipo de Espacio';
+    protected static string|\UnitEnum|null $navigationGroup = 'Infraestructura';
+    protected static ?int $navigationSort = 2;
 
+
+
+    
+    
     public static function form(Schema $schema): Schema
     {
         return TipoEspacioForm::configure($schema);

@@ -22,13 +22,17 @@ class NivelAcademicoResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedAcademicCap;
 
-    protected static ?string $pluralModelLabel = 'Niveles Académicos';
-
-    protected static ?string $modelLabel = 'Nivel Académico';
-
-    protected static string|\UnitEnum|null $navigationGroup = 'Gestión Académica';
-
+    
+    
+    
     protected static ?string $recordTitleAttribute = 'nombre';
+    protected static ?string $navigationLabel = 'Niveles Académicos';
+    protected static ?string $pluralModelLabel = 'Niveles Académicos';
+    protected static ?string $modelLabel = 'Nivel Académico';
+    protected static string|\UnitEnum|null $navigationGroup = 'Configuración del Sistema';
+    protected static ?int $navigationSort = 4;
+
+
 
     protected static ?string $slug = 'niveles-academicos';
     public static function form(Schema $schema): Schema

@@ -13,6 +13,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class HorarioResource extends Resource
 {
@@ -21,6 +22,13 @@ class HorarioResource extends Resource
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
     protected static ?string $recordTitleAttribute = 'id';
+    protected static ?string $navigationLabel = 'Horarios';
+    protected static ?string $pluralModelLabel = 'Horarios';
+    protected static ?string $modelLabel = 'Horario';
+    protected static string|\UnitEnum|null $navigationGroup = 'Gestión Académica';
+    protected static ?int $navigationSort = 4;
+
+
 
     public static function form(Schema $schema): Schema
     {
@@ -30,6 +38,11 @@ class HorarioResource extends Resource
     public static function table(Table $table): Table
     {
         return HorariosTable::configure($table);
+    }
+
+            public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()->with(['materia', 'profesor', 'espacio', 'seccion']);
     }
 
     public static function getRelations(): array

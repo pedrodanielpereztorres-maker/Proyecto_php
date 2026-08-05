@@ -29,11 +29,13 @@ class TurnosTable
                 //
             ])
             ->recordActions([
-                EditAction::make(),
+                EditAction::make()
+                    ->label('Editar'),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make(),
+                    DeleteBulkAction::make()
+                        ->label('Eliminar seleccionados'),
                 ]),
             ]);
     }

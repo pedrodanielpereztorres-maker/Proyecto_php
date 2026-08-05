@@ -17,8 +17,8 @@ class HorariosTable
     {
         return $table
             ->columns([
-                TextColumn::make('semestre.nombre')
-                    ->label('Semestre')
+                TextColumn::make('periodoAcademico.codigo')
+                    ->label('Período Académico')
                     ->badge()
                     ->sortable()
                     ->searchable(),
@@ -54,7 +54,7 @@ class HorariosTable
                     ->sortable(),
             ])
             ->filters([
-                SelectFilter::make('semestre_id')
+                SelectFilter::make('periodo_academico_id')
                     ->label('Periodo Académico')
                     ->options(\App\Models\PeriodoAcademico::orderBy('codigo', 'desc')->pluck('codigo', 'id')),
                 SelectFilter::make('dia_semana')
@@ -70,11 +70,13 @@ class HorariosTable
             ])
             ->defaultSort('hora_inicio')
             ->recordActions([
-                EditAction::make(),
+                EditAction::make()
+                    ->label('Editar'),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make(),
+                    DeleteBulkAction::make()
+                        ->label('Eliminar seleccionados'),
                 ]),
             ]);
     }

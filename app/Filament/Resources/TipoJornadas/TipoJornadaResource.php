@@ -21,13 +21,14 @@ class TipoJornadaResource extends Resource
 
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-rectangle-stack';
 
-    protected static ?string $pluralModelLabel = 'Tipos de Jornada';
-
-    protected static ?string $modelLabel = 'Tipo de Jornada';
-
-    protected static \UnitEnum|string|null $navigationGroup = 'Configuración Global';
-
     protected static ?string $recordTitleAttribute = 'nombre';
+    protected static ?string $navigationLabel = 'Tipos de Jornada';
+    protected static ?string $pluralModelLabel = 'Tipos de Jornada';
+    protected static ?string $modelLabel = 'Tipo de Jornada';
+    protected static string|\UnitEnum|null $navigationGroup = 'Configuración del Sistema';
+    protected static ?int $navigationSort = 7;
+
+
 
     public static function form(Schema $schema): Schema
     {
