@@ -15,6 +15,13 @@ class Configuracion extends Model
         'logo',
         'logo_url',
         'favicon',
-        'color_principal'
+        'color_principal',
+        'color_secundario',
+        'email_contacto',
+        'telefono_contacto',
+        'direccion',
+        'pie_pagina_pdf',
+        'director_academico',
+        'coordinador_general'
     ];
 }

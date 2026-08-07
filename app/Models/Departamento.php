@@ -16,6 +16,9 @@ class Departamento extends Model
         'nombre',
         'descripcion',
         'activo',
+        'nombre_coordinador',
+        'firma_coordinador',
+        'sello_departamento',
     ];
 
     public function carreras(): HasMany

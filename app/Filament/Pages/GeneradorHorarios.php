@@ -26,8 +26,8 @@ class GeneradorHorarios extends Page implements HasForms, HasActions
     use InteractsWithActions;
 
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-calendar-days';
-    protected static ?string $navigationLabel = 'Armar Horario (Visual)';
-    protected static ?string $title = 'Generador Visual de Horarios';
+    protected static ?string $navigationLabel = 'Armar Horario';
+    protected static ?string $title = 'Generador de Horarios';
     protected static ?int $navigationSort = 1;
     protected static string|\UnitEnum|null $navigationGroup = 'Gestión Académica';
 

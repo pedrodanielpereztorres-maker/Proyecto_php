@@ -12,6 +12,34 @@
         /* Modern Font for PDF */
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
 
+        /* Watermark */
+        .watermark {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            opacity: 0.1;
+            z-index: -1;
+            width: 400px;
+            max-width: 80%;
+        }
+
+        /* Membretes */
+        .membrete-top {
+            width: 100%;
+            height: auto;
+            max-height: 80px;
+            margin-bottom: 10px;
+            object-fit: contain;
+        }
+        .membrete-bottom {
+            width: 100%;
+            height: auto;
+            max-height: 60px;
+            margin-top: 10px;
+            object-fit: contain;
+        }
+
         body {
             font-family: 'Inter', Helvetica, Arial, sans-serif;
             margin: 0;
@@ -23,7 +51,7 @@
 
         /* Top Brand Bar */
         .brand-bar {
-            background-color: #2563eb; /* Royal Blue */
+            background-color: {{ $colorPrincipal }};
             height: 6px;
             width: 100%;
             margin-bottom: 15px;
@@ -46,7 +74,7 @@
         .logo-text {
             font-size: 24px;
             font-weight: 800;
-            color: #dc2626; /* IUTEPI Red */
+            color: {{ $colorPrincipal }};
             margin: 0;
             letter-spacing: -0.5px;
         }
@@ -191,7 +219,7 @@
         .legend-title {
             font-size: 9px;
             font-weight: 800;
-            color: #1e40af; /* Dark blue */
+            color: {{ $colorPrincipal }};
             margin-bottom: 4px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
@@ -206,12 +234,12 @@
             overflow: hidden;
         }
         .legend-box th {
-            background-color: #dbeafe;
-            color: #1e3a8a;
+            background-color: {{ $colorPrincipal }}20; /* Color claro para fondo */
+            color: {{ $colorPrincipal }};
             font-weight: 700;
             text-align: left;
             padding: 4px 6px;
-            border-bottom: 1px solid #bfdbfe;
+            border-bottom: 1px solid {{ $colorPrincipal }}40;
             text-transform: uppercase;
         }
         .legend-box td {
@@ -224,7 +252,7 @@
             border-bottom: none;
         }
         .badge {
-            background-color: #2563eb;
+            background-color: {{ $colorPrincipal }};
             color: white;
             padding: 1px 4px;
             border-radius: 3px;
@@ -240,14 +268,27 @@
             padding-top: 10px;
         }
         .firma-line {
-            width: 150px;
+            width: 200px;
             border-top: 1px solid #94a3b8;
             text-align: center;
             padding-top: 4px;
             font-weight: 700;
-            font-size: 8px;
+            font-size: 9px;
             color: #475569;
             margin: 0 auto;
+        }
+        .firma-imagen {
+            height: 60px;
+            object-fit: contain;
+            margin-bottom: 5px;
+        }
+        .sello-imagen {
+            height: 70px;
+            object-fit: contain;
+            position: absolute;
+            opacity: 0.8;
+            margin-left: 50px;
+            margin-top: -30px;
         }
         .footer-text {
             font-size: 7px;
@@ -258,7 +299,15 @@
 </head>
 <body>
 
-    <div class="brand-bar"></div>
+    @if(isset($watermarkBase64))
+        <img src="{{ $watermarkBase64 }}" class="watermark" alt="Fondo">
+    @endif
+
+    @if(isset($membreteTopBase64))
+        <img src="{{ $membreteTopBase64 }}" class="membrete-top" alt="Membrete">
+    @else
+        <div class="brand-bar"></div>
+    @endif
 
     <div class="header">
         <table class="header-table">
@@ -270,7 +319,7 @@
                 </td>
                 <td class="title-container">
                     <h1>{{ $config->nombre ?? 'Horario Académico' }}</h1>
-                    <h2>Programa de Formación y Distribución de Bloques</h2>
+                    <h2 style="font-size: 18px; text-transform: uppercase; text-align: center; margin-top: 5px; font-weight: 700;">HORARIO DE CLASES</h2>
                 </td>
                 <td style="width: 80px;"></td> <!-- Espaciador para centrar el texto -->
             </tr>
@@ -410,16 +459,36 @@
 
     <table class="footer-table">
         <tr>
-            <td style="width: 33%; vertical-align: bottom;">
+            <td style="width: 50%; vertical-align: bottom; text-align: center; position: relative;">
+                @if(isset($firmaBase64))
+                    <img src="{{ $firmaBase64 }}" class="firma-imagen" alt="Firma">
+                @else
+                    <div style="height: 60px;"></div> <!-- Espacio para firmar a mano -->
+                @endif
+                
+                @if(isset($selloBase64))
+                    <img src="{{ $selloBase64 }}" class="sello-imagen" alt="Sello">
+                @endif
+                
                 <div class="firma-line">
-                    Firma y Sello de Coordinación
+                    {{ $nombreCoordinador ?? 'Coordinador del Departamento' }}<br>
+                    <span style="font-weight: normal; font-size: 7px;">
+                        Coordinación @if(isset($departamento)) de {{ $departamento->nombre }} @endif
+                    </span>
                 </div>
             </td>
-            <td style="width: 67%; vertical-align: bottom;" class="footer-text">
-                Generado automáticamente el {{ \Carbon\Carbon::now()->format('d/m/Y h:i A') }}
+            <td style="width: 50%; vertical-align: bottom;" class="footer-text">
+                Generado automáticamente el {{ \Carbon\Carbon::now()->format('d/m/Y h:i A') }}<br>
+                {{ $config->pie_pagina_pdf ?? '' }}
             </td>
         </tr>
     </table>
+
+    @if(isset($membreteBottomBase64))
+        <div style="position: absolute; bottom: 0; width: 100%; text-align: center;">
+            <img src="{{ $membreteBottomBase64 }}" class="membrete-bottom" alt="Pie de Página">
+        </div>
+    @endif
 
 </body>
 </html>

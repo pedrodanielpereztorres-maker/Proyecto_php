@@ -33,7 +33,14 @@ class AdminPanelProvider extends PanelProvider
             // Ignore if DB not ready
         }
 
-        $primaryColor = $config && $config->color_principal ? Color::hex($config->color_principal) : Color::Blue;
+        $hexColor = $config && $config->color_principal ? $config->color_principal : '#c71b04';
+        
+        // Generar paleta completa pero forzar que los tonos principales (botones) sean el color exacto
+        $primaryColor = \Filament\Support\Colors\Color::hex($hexColor);
+        $primaryColor[500] = \Filament\Support\Colors\Color::hex($hexColor)[500]; // Mantener compatibilidad si es necesario
+        // Truco: Forzamos el color exacto en los tonos que Filament usa para botones
+        $primaryColor[500] = $hexColor; 
+        $primaryColor[600] = $hexColor;
 
         if ($config) {
             if ($config->nombre) $panel->brandName($config->nombre);
@@ -59,11 +66,98 @@ class AdminPanelProvider extends PanelProvider
                 fn (): string => view('filament.hooks.header-clock'),
             )
             ->viteTheme('resources/css/filament/admin/theme.css')
+            ->renderHook(
+                \Filament\View\PanelsRenderHook::HEAD_END,
+                fn (): string => \Illuminate\Support\Facades\Blade::render('
+                    <style>
+                        /* Dark Sidebar Theme Override */
+                        .fi-sidebar {
+                            background-color: #111111 !important; /* Negro Institucional */
+                            border-right: 1px solid rgba(255, 255, 255, 0.05) !important;
+                        }
+                        
+                        /* Scrollbar del Menú Lateral */
+                        .fi-sidebar-nav {
+                            scrollbar-width: thin;
+                            scrollbar-color: #333333 #111111;
+                        }
+                        .fi-sidebar-nav::-webkit-scrollbar {
+                            width: 6px;
+                        }
+                        .fi-sidebar-nav::-webkit-scrollbar-track {
+                            background: #111111;
+                        }
+                        .fi-sidebar-nav::-webkit-scrollbar-thumb {
+                            background-color: #333333;
+                            border-radius: 10px;
+                        }
+                        .fi-sidebar-nav::-webkit-scrollbar-thumb:hover {
+                            background-color: #555555;
+                        }
+                        
+                        /* Enlaces del Sidebar (Inactivos) */
+                        .fi-sidebar-item-btn,
+                        .fi-sidebar-item-label {
+                            color: #ffffff !important;
+                            font-weight: 500;
+                            transition: all 0.3s ease;
+                        }
+                        .fi-sidebar-item-btn:hover {
+                            background-color: rgba(255, 255, 255, 0.1) !important;
+                        }
+                        
+                        /* Elemento Activo (Color Dinámico) */
+                        .fi-sidebar-item.fi-active > .fi-sidebar-item-btn,
+                        .fi-active > a {
+                            background-color: {{ $color }} !important;
+                            color: #ffffff !important;
+                            font-weight: 700 !important;
+                        }
+                        .fi-sidebar-item.fi-active .fi-sidebar-item-icon {
+                            color: #ffffff !important;
+                        }
+
+                        /* Iconos inactivos */
+                        .fi-sidebar-item-icon {
+                            color: #ffffff !important;
+                            opacity: 0.7;
+                        }
+                        .fi-sidebar-item-btn:hover .fi-sidebar-item-icon {
+                            opacity: 1;
+                        }
+                        
+                        /* Títulos de Grupos (Configuración Global, etc) */
+                        .fi-sidebar-group-label {
+                            color: #a3a3a3 !important;
+                            text-transform: uppercase;
+                            letter-spacing: 0.05em;
+                            font-weight: 700 !important;
+                        }
+
+                        /* Topbar Mejorado (Blanco) */
+                        .fi-topbar {
+                            background-color: #ffffff !important;
+                            border-top: 4px solid {{ $color }} !important;
+                            border-bottom: 2px solid {{ $color }} !important;
+                            box-shadow: 0 4px 15px -3px rgba(0, 0, 0, 0.05) !important;
+                        }
+                        
+                        /* Soporte para Logo en Barra Lateral Oscura (Móviles) */
+                        .fi-sidebar-header {
+                            background-color: #ffffff !important;
+                            border-bottom: 2px solid {{ $color }} !important;
+                        }
+                        .fi-sidebar-header .fi-logo {
+                            padding: 0.5rem 0;
+                        }
+                    </style>
+                ', ['color' => $config && $config->color_principal ? $config->color_principal : '#c71b04'])
+            )
             ->login()
             ->colors([
                 'primary' => $primaryColor,
             ])
-            ->font('Inter')
+            ->font('Montserrat')
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->pages([

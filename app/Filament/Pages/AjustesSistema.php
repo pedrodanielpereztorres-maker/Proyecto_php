@@ -62,6 +62,12 @@ class AjustesSistema extends Page implements HasForms
                             ->prefixIcon('heroicon-m-tag')
                             ->required()
                             ->maxLength(255),
+                        TextInput::make('direccion')
+                            ->label('Dirección')
+                            ->placeholder('Ej: Av. Principal...')
+                            ->prefixIcon('heroicon-m-map-pin')
+                            ->columnSpanFull()
+                            ->maxLength(255),
                     ])->columns(2),
 
                 Section::make('Apariencia y Marca')
@@ -88,8 +94,44 @@ class AjustesSistema extends Page implements HasForms
                             ->directory('identidad'),
                         ColorPicker::make('color_principal')
                             ->label('Color Principal del Sistema')
-                            ->helperText('Define el color de la interfaz.')
+                            ->helperText('Define el color base de la interfaz.')
                             ->required(),
+                        ColorPicker::make('color_secundario')
+                            ->label('Color Secundario')
+                            ->helperText('Define el color complementario (para detalles y PDFs).')
+                            ->default('#ffffff'),
+                    ])->columns(2),
+
+                Section::make('Contacto y Reportes (PDFs)')
+                    ->description('Configura los datos de contacto y el formato de los reportes/horarios en PDF.')
+                    ->icon('heroicon-o-document-text')
+                    ->columnSpanFull()
+                    ->schema([
+                        TextInput::make('email_contacto')
+                            ->label('Email de Contacto')
+                            ->email()
+                            ->prefixIcon('heroicon-m-envelope')
+                            ->maxLength(255),
+                        TextInput::make('telefono_contacto')
+                            ->label('Teléfono de Contacto')
+                            ->prefixIcon('heroicon-m-phone')
+                            ->maxLength(255),
+                        TextInput::make('pie_pagina_pdf')
+                            ->label('Texto para Pie de Página (PDF)')
+                            ->placeholder('Ej: Av. Principal, Edificio X, Nro 10...')
+                            ->prefixIcon('heroicon-m-document-text')
+                            ->columnSpanFull()
+                            ->maxLength(255),
+                        TextInput::make('director_academico')
+                            ->label('Director Académico')
+                            ->helperText('Nombre completo para firmas.')
+                            ->prefixIcon('heroicon-m-user-circle')
+                            ->maxLength(255),
+                        TextInput::make('coordinador_general')
+                            ->label('Coordinador General')
+                            ->helperText('Nombre completo para firmas.')
+                            ->prefixIcon('heroicon-m-user-circle')
+                            ->maxLength(255),
                     ])->columns(2),
             ])
             ->statePath('data');

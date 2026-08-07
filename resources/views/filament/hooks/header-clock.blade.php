@@ -1,4 +1,4 @@
-<div style="display: flex; align-items: center; gap: 0.5rem; margin-right: 1rem; font-size: 0.875rem; font-weight: 500;" class="text-gray-500 dark:text-gray-400"
+<div style="display: flex; align-items: center; gap: 0.5rem; margin-right: 1rem; font-size: 0.875rem; font-weight: 700;" class="text-primary-600 dark:text-primary-400"
      x-data="{
         time: '',
         date: '',

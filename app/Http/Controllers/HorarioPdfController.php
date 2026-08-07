@@ -7,6 +7,7 @@ use App\Models\Seccion;
 use App\Models\Horario;
 use App\Models\JornadaParametro;
 use App\Models\Configuracion;
+use App\Models\ConfiguracionDocumento;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -80,7 +81,45 @@ class HorarioPdfController extends Controller
             $logoBase64 = 'data:image/' . $tipo . ';base64,' . base64_encode(file_get_contents(public_path('storage/' . $config->logo)));
         }
 
-        $pdf = Pdf::loadView('pdf.horario', compact('seccion', 'horariosAsignados', 'bloques', 'dias', 'config', 'logoBase64'));
+        // --- Configuración Global de Documentos ---
+        $configDoc = ConfiguracionDocumento::first();
+        $membreteTopBase64 = null;
+        $membreteBottomBase64 = null;
+        $watermarkBase64 = null;
+
+        if ($configDoc) {
+            if ($configDoc->membrete_encabezado && file_exists(public_path('storage/' . $configDoc->membrete_encabezado))) {
+                $tipo = pathinfo(public_path('storage/' . $configDoc->membrete_encabezado), PATHINFO_EXTENSION);
+                $membreteTopBase64 = 'data:image/' . $tipo . ';base64,' . base64_encode(file_get_contents(public_path('storage/' . $configDoc->membrete_encabezado)));
+            }
+            if ($configDoc->membrete_pie && file_exists(public_path('storage/' . $configDoc->membrete_pie))) {
+                $tipo = pathinfo(public_path('storage/' . $configDoc->membrete_pie), PATHINFO_EXTENSION);
+                $membreteBottomBase64 = 'data:image/' . $tipo . ';base64,' . base64_encode(file_get_contents(public_path('storage/' . $configDoc->membrete_pie)));
+            }
+            if ($configDoc->marca_de_agua && file_exists(public_path('storage/' . $configDoc->marca_de_agua))) {
+                $tipo = pathinfo(public_path('storage/' . $configDoc->marca_de_agua), PATHINFO_EXTENSION);
+                $watermarkBase64 = 'data:image/' . $tipo . ';base64,' . base64_encode(file_get_contents(public_path('storage/' . $configDoc->marca_de_agua)));
+            }
+        }
+
+        // --- Firma y Sello por Departamento ---
+        $departamento = $seccion->carrera ? $seccion->carrera->departamento : null;
+        $nombreCoordinador = $departamento ? $departamento->nombre_coordinador : null;
+        $firmaBase64 = null;
+        $selloBase64 = null;
+
+        if ($departamento) {
+            if ($departamento->firma_coordinador && file_exists(public_path('storage/' . $departamento->firma_coordinador))) {
+                $tipo = pathinfo(public_path('storage/' . $departamento->firma_coordinador), PATHINFO_EXTENSION);
+                $firmaBase64 = 'data:image/' . $tipo . ';base64,' . base64_encode(file_get_contents(public_path('storage/' . $departamento->firma_coordinador)));
+            }
+            if ($departamento->sello_departamento && file_exists(public_path('storage/' . $departamento->sello_departamento))) {
+                $tipo = pathinfo(public_path('storage/' . $departamento->sello_departamento), PATHINFO_EXTENSION);
+                $selloBase64 = 'data:image/' . $tipo . ';base64,' . base64_encode(file_get_contents(public_path('storage/' . $departamento->sello_departamento)));
+            }
+        }
+
+        $pdf = Pdf::loadView('pdf.horario', compact('seccion', 'horariosAsignados', 'bloques', 'dias', 'config', 'logoBase64', 'configDoc', 'membreteTopBase64', 'membreteBottomBase64', 'watermarkBase64', 'nombreCoordinador', 'firmaBase64', 'selloBase64', 'departamento'));
         $pdf->setPaper('letter', 'portrait');
         
         // Formato: carrera_periodo_seccion.pdf
