@@ -14,6 +14,7 @@ class Horario extends Model
     use HasFactory;
 
     protected $fillable = [
+        'es_receso',
         'materia_id',
         'profesor_id',
         'espacio_id',
@@ -28,6 +29,7 @@ class Horario extends Model
     protected $casts = [
         'hora_inicio' => 'datetime:H:i',
         'hora_fin' => 'datetime:H:i',
+        'es_receso' => 'boolean',
         'omitir_validacion_capacidad' => 'boolean',
     ];
 
@@ -48,6 +50,10 @@ class Horario extends Model
             return;
         }
 
+        if ($horario->es_receso) {
+            return; // No se aplican validaciones de choques de profe/espacio a los recesos
+        }
+
         if ($horario->hora_inicio->gte($horario->hora_fin)) {
             throw ValidationException::withMessages([
                 'hora_fin' => 'La hora de fin debe ser posterior a la hora de inicio.',
@@ -57,6 +63,8 @@ class Horario extends Model
         static::validarSinChoques($horario);
         static::validarRestriccionesProfesor($horario);
         static::validarCapacidadEspacio($horario);
+        static::validarFatigaEstudiantil($horario);
+        static::validarHorasSemanales($horario);
     }
 
     protected static function validarSinChoques(Horario $horario): void
@@ -128,6 +136,72 @@ class Horario extends Model
         if ($seccion->cantidad_alumnos > $espacio->capacidad_maxima) {
             throw ValidationException::withMessages([
                 'espacio_id' => 'La capacidad del espacio es insuficiente para la sección seleccionada.',
+            ]);
+        }
+    }
+
+    protected static function validarFatigaEstudiantil(Horario $horario): void
+    {
+        if (!$horario->materia_id || !$horario->seccion_id || !$horario->hora_inicio || !$horario->hora_fin) {
+            return;
+        }
+
+        $duracionNuevaMinutos = $horario->hora_inicio->diffInMinutes($horario->hora_fin);
+
+        $horariosExistentes = static::where('periodo_academico_id', $horario->periodo_academico_id)
+            ->where('dia_semana', $horario->dia_semana)
+            ->where('seccion_id', $horario->seccion_id)
+            ->where('materia_id', $horario->materia_id)
+            ->where('id', '!=', $horario->id ?? 0)
+            ->get();
+
+        $duracionExistenteMinutos = 0;
+        foreach ($horariosExistentes as $h) {
+            if ($h->hora_inicio && $h->hora_fin) {
+                $duracionExistenteMinutos += $h->hora_inicio->diffInMinutes($h->hora_fin);
+            }
+        }
+
+        // Límite de 3 bloques de 40 min = 120 min diarios por materia
+        if (($duracionExistenteMinutos + $duracionNuevaMinutos) > 120) {
+            throw ValidationException::withMessages([
+                'materia_id' => 'Regla Antifatiga: No se pueden asignar más de 3 horas (120 min) de la misma materia en un solo día.',
+            ]);
+        }
+    }
+
+    protected static function validarHorasSemanales(Horario $horario): void
+    {
+        if (!$horario->materia_id || !$horario->seccion_id || !$horario->hora_inicio || !$horario->hora_fin) {
+            return;
+        }
+
+        $materia = Materia::find($horario->materia_id);
+        if (!$materia || !$materia->horas_semanales) {
+            return;
+        }
+
+        $duracionNuevaMinutos = $horario->hora_inicio->diffInMinutes($horario->hora_fin);
+
+        $horariosExistentes = static::where('periodo_academico_id', $horario->periodo_academico_id)
+            ->where('seccion_id', $horario->seccion_id)
+            ->where('materia_id', $horario->materia_id)
+            ->where('id', '!=', $horario->id ?? 0)
+            ->get();
+
+        $minutosExistentes = 0;
+        foreach ($horariosExistentes as $h) {
+            if ($h->hora_inicio && $h->hora_fin && !$h->es_receso) {
+                $minutosExistentes += $h->hora_inicio->diffInMinutes($h->hora_fin);
+            }
+        }
+
+        // 1 hora académica = 40 minutos en este sistema
+        $minutosMaximos = $materia->horas_semanales * 40;
+
+        if (($minutosExistentes + $duracionNuevaMinutos) > $minutosMaximos) {
+            throw ValidationException::withMessages([
+                'materia_id' => "Se ha excedido el límite semanal para '{$materia->nombre}'. Máximo permitido por pénsum: {$materia->horas_semanales} horas académicas (" . $minutosMaximos . " min).",
             ]);
         }
     }

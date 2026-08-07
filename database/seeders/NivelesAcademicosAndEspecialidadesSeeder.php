@@ -28,11 +28,16 @@ class NivelesAcademicosAndEspecialidadesSeeder extends Seeder
             );
         }
 
-        // 2. Sembrar Especialidades
+        // 2. Sembrar Especialidades / Menciones
         $especialidades = [
-            ['nombre' => 'Informática', 'descripcion' => 'Área de tecnología y desarrollo de software.', 'activo' => true],
-            ['nombre' => 'Administración', 'descripcion' => 'Gestión empresarial y finanzas.', 'activo' => true],
+            // Menciones específicas
+            ['nombre' => 'Informática',         'descripcion' => 'Área de tecnología y desarrollo de software.',              'activo' => true],
+            ['nombre' => 'Administración',       'descripcion' => 'Gestión empresarial y finanzas.',                          'activo' => true],
             ['nombre' => 'Análisis de Sistemas', 'descripcion' => 'Diseño, análisis y arquitectura de sistemas de información.', 'activo' => true],
+            // Menciones generales (sin especialización específica)
+            ['nombre' => 'Informática General',         'descripcion' => 'Mención general del área de Informática sin especialización particular.',         'activo' => true],
+            ['nombre' => 'Administración General',       'descripcion' => 'Mención general del área de Administración sin especialización particular.',       'activo' => true],
+            ['nombre' => 'Análisis de Sistemas General', 'descripcion' => 'Mención general del área de Análisis de Sistemas sin especialización particular.', 'activo' => true],
         ];
 
         foreach ($especialidades as $especialidad) {

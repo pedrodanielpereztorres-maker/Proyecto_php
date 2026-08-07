@@ -29,6 +29,7 @@ class DepartamentoResource extends Resource
     protected static ?string $modelLabel = 'Departamento';
     protected static string|\UnitEnum|null $navigationGroup = 'Configuración del Sistema';
     protected static ?int $navigationSort = 5;
+    protected static bool $shouldRegisterNavigation = false;
 
 
 

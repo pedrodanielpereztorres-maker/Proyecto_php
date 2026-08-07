@@ -4,10 +4,13 @@ namespace App\Filament\Resources\Horarios\Schemas;
 
 use App\Models\PeriodoAcademico;
 use App\Models\Seccion;
+use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Forms\Components\TimePicker;
 use Filament\Schemas\Schema;
+use Illuminate\Support\HtmlString;
 
 class HorarioForm
 {
@@ -27,7 +30,7 @@ class HorarioForm
                     ->searchable()
                     ->required(),
                 Select::make('profesor_id')
-                    ->label('Profesor')
+                    ->label('Docente')
                     ->relationship('profesor', 'nombre')
                     ->preload()
                     ->searchable()
@@ -43,7 +46,21 @@ class HorarioForm
                     ->relationship('seccion', 'codigo')
                     ->preload()
                     ->searchable()
-                    ->required(),
+                    ->required()
+                    ->live()
+                    ->afterStateUpdated(fn ($state, callable $set) =>
+                        $set('_semestre_display', $state
+                            ? (Seccion::find($state)?->semestre ?? '—')
+                            : '—'
+                        )
+                    ),
+                TextInput::make('_semestre_display')
+                    ->label('Semestre de la Sección')
+                    ->disabled()
+                    ->dehydrated(false)
+                    ->helperText('Se completa automáticamente al seleccionar la sección.')
+                    ->prefixIcon('heroicon-m-academic-cap')
+                    ->placeholder('Seleccione una sección...'),
                 Toggle::make('omitir_validacion_capacidad')
                     ->label('Omitir validación de capacidad')
                     ->default(false),

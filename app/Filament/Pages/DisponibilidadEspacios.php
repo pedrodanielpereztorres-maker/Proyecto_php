@@ -46,7 +46,7 @@ class DisponibilidadEspacios extends Page implements HasForms
             return collect();
         }
 
-        return Horario::with(['materia.carrera', 'profesor', 'periodoAcademico'])
+        return Horario::with(['materia.carrera', 'profesor', 'periodoAcademico', 'seccion'])
             ->where('espacio_id', $this->espacio_id)
             ->when($this->periodo_academico_id, fn ($q) => $q->where('periodo_academico_id', $this->periodo_academico_id))
             ->orderBy('periodo_academico_id')

@@ -9,6 +9,8 @@ use Filament\Forms\Components\Select;
 use Filament\Support\Icons\Heroicon;
 use App\Models\Profesor;
 use App\Models\Horario;
+use App\Models\JornadaParametro;
+use Carbon\Carbon;
 
 class HorarioProfesores extends Page implements HasForms
 {
@@ -22,6 +24,41 @@ class HorarioProfesores extends Page implements HasForms
 
     public ?int $profesor_id = null;
     public ?int $periodo_academico_id = null;
+    public array $bloques = [];
+
+    public function mount()
+    {
+        $this->cargarBloques();
+    }
+
+    public function cargarBloques()
+    {
+        $parametro = JornadaParametro::first();
+        if (!$parametro) {
+            return;
+        }
+        
+        $inicio = Carbon::parse($parametro->hora_inicio);
+        $fin = Carbon::parse($parametro->hora_fin);
+        $this->bloques = [];
+
+        // Generar grilla: bloques de 40 min, excepto a las 12:00 PM que es un receso de 20 min
+        while ($inicio->lt($fin)) {
+            $esReceso = ($inicio->format('H:i') === '12:00');
+            $duracion = $esReceso ? 20 : 40;
+
+            $inicioStr = $inicio->format('H:i');
+            $inicioAmpm = $inicio->format('h:i A');
+            $inicio->addMinutes($duracion);
+
+            $this->bloques[] = [
+                'inicio' => $inicioStr,
+                'inicio_ampm' => $inicioAmpm,
+                'fin_ampm' => $inicio->format('h:i A'),
+                'es_receso_default' => $esReceso
+            ];
+        }
+    }
 
     public function form(\Filament\Schemas\Schema $schema): \Filament\Schemas\Schema
     {
@@ -50,7 +87,7 @@ class HorarioProfesores extends Page implements HasForms
             return collect();
         }
 
-        return Horario::with(['materia.carrera', 'espacio', 'periodoAcademico'])
+        return Horario::with(['materia.carrera', 'espacio', 'periodoAcademico', 'seccion'])
             ->where('profesor_id', $this->profesor_id)
             ->when($this->periodo_academico_id, fn ($q) => $q->where('periodo_academico_id', $this->periodo_academico_id))
             ->orderByRaw("CASE dia_semana

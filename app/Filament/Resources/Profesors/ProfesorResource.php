@@ -22,9 +22,9 @@ class ProfesorResource extends Resource
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
     protected static ?string $recordTitleAttribute = 'nombre';
-    protected static ?string $navigationLabel = 'Profesores';
-    protected static ?string $pluralModelLabel = 'Profesores';
-    protected static ?string $modelLabel = 'Profesor';
+    protected static ?string $navigationLabel = 'Docentes';
+    protected static ?string $pluralModelLabel = 'Docentes';
+    protected static ?string $modelLabel = 'Docente';
     protected static string|\UnitEnum|null $navigationGroup = 'Gestión Académica';
     protected static ?int $navigationSort = 2;
 

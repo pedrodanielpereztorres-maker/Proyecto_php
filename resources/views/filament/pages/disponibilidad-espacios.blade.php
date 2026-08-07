@@ -4,14 +4,14 @@
     <div class="rounded-xl bg-white dark:bg-gray-900 shadow-sm ring-1 ring-gray-200 dark:ring-white/10 p-5">
         <p class="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-4">Filtros</p>
         <form wire:submit.prevent>{{ $this->form }}</form>
-        <p class="mt-2 text-xs text-gray-400">El semestre es opcional. Si no lo seleccionas, se muestran todos los horarios del espacio.</p>
+        <p class="mt-2 text-xs text-gray-400">El período académico es opcional. Si no lo seleccionas, se muestran todos los horarios del espacio en cualquier período.</p>
     </div>
 
     @if($this->espacio_id)
         @php
             $horarios = $this->getHorariosProperty();
             $espacio  = \App\Models\Espacio::find($this->espacio_id);
-            $sem      = $this->semestre_id ? \App\Models\Semestre::find($this->semestre_id) : null;
+            $periodo  = $this->periodo_academico_id ? \App\Models\PeriodoAcademico::find($this->periodo_academico_id) : null;
             $libre    = $horarios->isEmpty();
         @endphp
 
@@ -24,8 +24,8 @@
                     </h2>
                     <p class="text-sm text-gray-500 mt-2">
                         {{ $espacio?->tipoEspacio?->nombre }} &middot; Capacidad {{ $espacio?->capacidad_maxima }}
-                        @if($sem)
-                            &mdash; Semestre: <strong class="text-gray-900 dark:text-white">{{ $sem->nombre }}</strong>
+                        @if($periodo)
+                            &mdash; Período: <strong class="text-gray-900 dark:text-white">{{ $periodo->codigo }}</strong>
                         @endif
                     </p>
                 </div>
@@ -47,61 +47,85 @@
             </div>
         </div>
 
-        {{-- ─── Tabla o mensaje vacío ──────────────────────────── --}}
+        {{-- ─── Cuadrícula por Días (Kanban Style) ──────────────────────────── --}}
         @if($libre)
             <div class="mt-4 rounded-xl bg-white dark:bg-gray-900 ring-1 ring-gray-200 dark:ring-white/10 py-10 text-center text-gray-500 dark:text-gray-400">
-                Este espacio no tiene ningún horario asignado{{ $sem ? ' en el semestre ' . $sem->nombre : '' }}.
+                Este espacio no tiene ningún horario asignado{{ $periodo ? ' en el período ' . $periodo->codigo : '' }}.
             </div>
         @else
-            <div class="mt-4 rounded-xl overflow-hidden ring-1 ring-gray-200 dark:ring-white/10">
-                <table class="w-full text-sm bg-white dark:bg-gray-900">
-                    <thead class="bg-gray-50 dark:bg-gray-800 border-b border-gray-200 dark:border-white/10">
-                        <tr>
-                            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Semestre</th>
-                            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Día</th>
-                            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Horario</th>
-                            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Materia</th>
-                            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Profesor</th>
-                            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Carrera</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-100 dark:divide-white/5">
-                        @foreach($horarios as $h)
-                            <tr class="hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
-                                <td class="px-4 py-3">
-                                    <span class="inline-block px-2 py-0.5 rounded text-xs font-semibold bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300">
-                                        {{ $h->semestre?->nombre ?? '—' }}
-                                    </span>
-                                </td>
-                                <td class="px-4 py-3">
-                                    <span class="inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold
-                                        @if(in_array($h->dia_semana, ['Lunes','Miércoles','Viernes']))
-                                            bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300
-                                        @else
-                                            bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300
-                                        @endif">
-                                        {{ $h->dia_semana }}
-                                    </span>
-                                </td>
-                                <td class="px-4 py-3 font-mono text-gray-900 dark:text-gray-100 whitespace-nowrap">
-                                    {{ \Carbon\Carbon::parse($h->hora_inicio)->format('H:i') }} – {{ \Carbon\Carbon::parse($h->hora_fin)->format('H:i') }}
-                                </td>
-                                <td class="px-4 py-3 text-gray-800 dark:text-gray-200">
-                                    {{ $h->materia?->nombre ?? '—' }}
-                                    @if($h->materia?->codigo)
-                                        <span class="text-gray-400 text-xs">({{ $h->materia->codigo }})</span>
-                                    @endif
-                                </td>
-                                <td class="px-4 py-3 text-gray-700 dark:text-gray-300">
-                                    {{ $h->profesor?->nombre ?? '—' }} {{ $h->profesor?->apellido ?? '' }}
-                                </td>
-                                <td class="px-4 py-3 text-gray-600 dark:text-gray-300">
-                                    {{ $h->materia?->carrera?->nombre ?? '—' }}
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+            @php
+                $horariosPorDia = $horarios->groupBy('dia_semana');
+            @endphp
+            
+            <div class="mt-6 overflow-x-auto pb-4">
+                <div class="flex gap-4 min-w-max">
+                    @foreach(['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'] as $dia)
+                        @php
+                            $clasesDelDia = $horariosPorDia->get($dia, collect());
+                        @endphp
+                        
+                        <div class="w-72 flex flex-col gap-3 bg-gray-50/50 dark:bg-gray-900/50 p-3 rounded-2xl border border-gray-100 dark:border-gray-800">
+                            <!-- Cabecera del día -->
+                            <div class="sticky top-0 z-10 py-1 flex items-center justify-between">
+                                <h3 class="font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                                    <span class="w-2 h-2 rounded-full {{ $clasesDelDia->isEmpty() ? 'bg-emerald-400' : 'bg-primary-500' }}"></span>
+                                    {{ $dia }}
+                                </h3>
+                                <span class="text-xs font-semibold px-2 py-0.5 rounded-full {{ $clasesDelDia->isEmpty() ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-gray-200 text-gray-700 dark:bg-gray-800 dark:text-gray-300' }}">
+                                    {{ $clasesDelDia->count() }}
+                                </span>
+                            </div>
+                            
+                            <!-- Lista de Tarjetas -->
+                            @if($clasesDelDia->isEmpty())
+                                <div class="flex-1 rounded-xl border-2 border-dashed border-emerald-200 dark:border-emerald-900/30 bg-emerald-50/30 dark:bg-emerald-900/10 text-center text-emerald-600/70 dark:text-emerald-500/50 text-sm flex flex-col items-center justify-center min-h-[120px] shadow-sm">
+                                    <x-heroicon-o-check-badge class="mb-1 opacity-50" style="width: 1.5rem; height: 1.5rem;" />
+                                    <span class="font-medium">Día Libre</span>
+                                </div>
+                            @else
+                                <div class="flex flex-col gap-3 flex-1">
+                                    @foreach($clasesDelDia as $h)
+                                        <div class="p-3.5 rounded-xl bg-white dark:bg-gray-800 shadow-sm ring-1 ring-gray-200 dark:ring-white/10 relative group hover:shadow-md hover:ring-primary-500/50 dark:hover:ring-primary-500/50 transition-all cursor-default">
+                                            <!-- Borde izquierdo de acento -->
+                                            <div class="absolute left-0 top-0 bottom-0 w-1.5 bg-primary-500 rounded-l-xl opacity-90 group-hover:bg-primary-400"></div>
+                                            
+                                            <div class="pl-2">
+                                                <!-- Hora y Semestre -->
+                                                <div class="flex justify-between items-start mb-2">
+                                                    <div class="text-[11px] font-mono font-bold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700/50 px-2 py-1 rounded-md border border-gray-200 dark:border-gray-600/50">
+                                                        {{ \Carbon\Carbon::parse($h->hora_inicio)->format('h:i A') }} - {{ \Carbon\Carbon::parse($h->hora_fin)->format('h:i A') }}
+                                                    </div>
+                                                    <span class="text-[10px] font-extrabold uppercase tracking-widest text-primary-700 dark:text-primary-300 bg-primary-50 dark:bg-primary-900/30 px-2 py-1 rounded-md ring-1 ring-primary-500/20">
+                                                        S: {{ $h->seccion?->semestre ?? '—' }}
+                                                    </span>
+                                                </div>
+                                                
+                                                <!-- Materia -->
+                                                <div class="font-bold text-sm text-gray-900 dark:text-white mt-1 leading-tight line-clamp-2" title="{{ $h->materia?->nombre }}">
+                                                    {{ $h->materia?->nombre ?? '—' }}
+                                                </div>
+                                                
+                                                <hr class="my-2 border-gray-100 dark:border-gray-700">
+                                                
+                                                <!-- Metadatos -->
+                                                <div class="flex flex-col gap-1.5 text-xs text-gray-500 dark:text-gray-400">
+                                                    <div class="flex items-center gap-2">
+                                                        <x-heroicon-s-user class="text-gray-400 dark:text-gray-500 flex-shrink-0" style="width: 0.875rem; height: 0.875rem;" />
+                                                        <span class="truncate font-medium">{{ $h->profesor?->nombre ?? '—' }} {{ $h->profesor?->apellido ?? '' }}</span>
+                                                    </div>
+                                                    <div class="flex items-center gap-2">
+                                                        <x-heroicon-s-academic-cap class="text-gray-400 dark:text-gray-500 flex-shrink-0" style="width: 0.875rem; height: 0.875rem;" />
+                                                        <span class="truncate">{{ $h->seccion?->codigo ?? '—' }} • {{ $h->materia?->carrera?->siglas ?? $h->materia?->carrera?->nombre ?? '—' }}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            @endif
+                        </div>
+                    @endforeach
+                </div>
             </div>
         @endif
 
@@ -109,7 +133,7 @@
         {{-- ─── Estado inicial sin ícono grande ────────────────── --}}
         <div class="mt-6 rounded-xl bg-white dark:bg-gray-900 ring-1 ring-gray-200 dark:ring-white/10 py-12 text-center">
             <p class="text-base font-semibold text-gray-700 dark:text-gray-300">Selecciona un Espacio</p>
-            <p class="text-sm text-gray-400 mt-1">Elige un aula (y opcionalmente un semestre) para ver su ocupación y disponibilidad.</p>
+            <p class="text-sm text-gray-400 mt-1">Elige un aula (y opcionalmente un período) para ver su ocupación y disponibilidad.</p>
         </div>
     @endif
 

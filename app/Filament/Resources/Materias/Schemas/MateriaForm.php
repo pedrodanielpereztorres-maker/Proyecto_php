@@ -24,12 +24,33 @@ class MateriaForm
                     ->relationship('carrera', 'nombre')
                     ->label('Carrera')
                     ->nullable(),
+                TextInput::make('horas_teoricas')
+                    ->required()
+                    ->numeric()
+                    ->integer()
+                    ->default(0)
+                    ->live()
+                    ->afterStateUpdated(function (callable $set, callable $get) {
+                        $set('horas_semanales', intval($get('horas_teoricas')) + intval($get('horas_practicas')));
+                    })
+                    ->label('Horas Teóricas (HT)'),
+                TextInput::make('horas_practicas')
+                    ->required()
+                    ->numeric()
+                    ->integer()
+                    ->default(0)
+                    ->live()
+                    ->afterStateUpdated(function (callable $set, callable $get) {
+                        $set('horas_semanales', intval($get('horas_teoricas')) + intval($get('horas_practicas')));
+                    })
+                    ->label('Horas Prácticas (HP)'),
                 TextInput::make('horas_semanales')
                     ->required()
                     ->numeric()
                     ->integer()
                     ->default(2)
-                    ->label('Horas semanales'),
+                    ->readOnly()
+                    ->label('Horas Semanales (Total)'),
                 Select::make('semestre')
                     ->required()
                     ->options([
@@ -42,10 +63,6 @@ class MateriaForm
                     ])
                     ->default(1)
                     ->label('Semestre'),
-                Select::make('tipo_espacio_id')
-                    ->relationship('tipoEspacio', 'nombre')
-                    ->label('Tipo de espacio')
-                    ->nullable(),
             ]);
     }
 }

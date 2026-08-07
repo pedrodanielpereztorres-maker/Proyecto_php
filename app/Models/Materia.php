@@ -15,6 +15,8 @@ class Materia extends Model
         'creditos',
         'carrera_id',
         'horas_semanales',
+        'horas_teoricas',
+        'horas_practicas',
         'semestre',
         'tipo_espacio_id',
     ];

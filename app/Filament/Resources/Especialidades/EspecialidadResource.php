@@ -27,11 +27,11 @@ class EspecialidadResource extends Resource
     
     
     protected static ?string $recordTitleAttribute = 'nombre';
-    protected static ?string $navigationLabel = 'Especialidades';
-    protected static ?string $pluralModelLabel = 'Especialidades';
-    protected static ?string $modelLabel = 'Especialidad';
-    protected static string|\UnitEnum|null $navigationGroup = 'Configuración del Sistema';
-    protected static ?int $navigationSort = 3;
+    protected static ?string $navigationLabel = 'Menciones / Especialidades';
+    protected static ?string $pluralModelLabel = 'Menciones';
+    protected static ?string $modelLabel = 'Mención';
+    protected static string|\UnitEnum|null $navigationGroup = 'Gestión Académica';
+    protected static ?int $navigationSort = 7;
 
 
 

@@ -22,9 +22,9 @@ class ProfesorRestriccionResource extends Resource
     protected static ?string $model = ProfesorRestriccion::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedLockClosed;
-    protected static ?string $navigationLabel = 'Restricciones Docentes';
-    protected static ?string $pluralModelLabel = 'Restricciones Docentes';
-    protected static ?string $modelLabel = 'Restricción Docente';
+    protected static ?string $navigationLabel = 'Restricciones de Docentes';
+    protected static ?string $pluralModelLabel = 'Restricciones de Docentes';
+    protected static ?string $modelLabel = 'Restricción de Docente';
     protected static string|\UnitEnum|null $navigationGroup = 'Gestión Académica';
     protected static ?int $navigationSort = 3;
 

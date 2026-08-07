@@ -27,6 +27,7 @@ class HorarioResource extends Resource
     protected static ?string $modelLabel = 'Horario';
     protected static string|\UnitEnum|null $navigationGroup = 'Gestión Académica';
     protected static ?int $navigationSort = 4;
+    protected static bool $shouldRegisterNavigation = false;
 
 
 
