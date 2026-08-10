@@ -22,6 +22,7 @@ class Seccion extends Model
         'semestre',
         'codigo',
         'cantidad_alumnos',
+        'estado_horario',
     ];
 
     protected $casts = [

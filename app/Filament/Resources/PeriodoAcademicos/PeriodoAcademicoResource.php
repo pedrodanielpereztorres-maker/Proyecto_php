@@ -147,7 +147,26 @@ class PeriodoAcademicoResource extends Resource
                     ->dateTime('d/m/Y')
                     ->sortable(),
             ])
-            ->defaultSort('codigo', 'desc');
+            ->defaultSort('codigo', 'desc')
+            ->recordActions([
+                \Filament\Actions\Action::make('iniciar_curso')
+                    ->label('Iniciar Período')
+                    ->icon('heroicon-o-play')
+                    ->color('success')
+                    ->requiresConfirmation()
+                    ->modalHeading('¿Iniciar Período Académico?')
+                    ->modalDescription('Al iniciar el período, los horarios aprobados se harán visibles en el portal público. ¿Deseas continuar?')
+                    ->modalSubmitActionLabel('Sí, Iniciar')
+                    ->visible(fn (PeriodoAcademico $record): bool => $record->estado === 'planificacion')
+                    ->action(function (PeriodoAcademico $record) {
+                        $record->update(['estado' => 'curso']);
+                        \Filament\Notifications\Notification::make()
+                            ->title('Período iniciado con éxito')
+                            ->success()
+                            ->send();
+                    }),
+                \Filament\Actions\EditAction::make(),
+            ]);
     }
 
     public static function getRelations(): array

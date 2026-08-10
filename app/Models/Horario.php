@@ -81,7 +81,7 @@ class Horario extends Model
 
         if ($conflictoProfesor) {
             throw ValidationException::withMessages([
-                'profesor_id' => 'El profesor ya tiene una clase asignada en ese día y rango de horas para este período académico.',
+                'profesor_id' => '¡Choque detectado! El profesor ya está dando otra clase a esa misma hora.',
             ]);
         }
 
@@ -95,7 +95,7 @@ class Horario extends Model
 
         if ($conflictoEspacio) {
             throw ValidationException::withMessages([
-                'espacio_id' => 'El espacio ya está ocupado en ese día y rango de horas para este período académico.',
+                'espacio_id' => 'Este espacio físico ya se encuentra ocupado a esa hora por otra sección.',
             ]);
         }
     }
@@ -111,7 +111,7 @@ class Horario extends Model
 
         if ($existeRestriccion) {
             throw ValidationException::withMessages([
-                'profesor_id' => 'El profesor tiene una restricción en el horario seleccionado.',
+                'profesor_id' => 'El docente indicó en sus restricciones que no tiene disponibilidad para dar clases en este horario.',
             ]);
         }
     }
@@ -135,7 +135,7 @@ class Horario extends Model
 
         if ($seccion->cantidad_alumnos > $espacio->capacidad_maxima) {
             throw ValidationException::withMessages([
-                'espacio_id' => 'La capacidad del espacio es insuficiente para la sección seleccionada.',
+                'espacio_id' => 'El espacio seleccionado es muy pequeño para la cantidad de alumnos de esta sección.',
             ]);
         }
     }
@@ -165,7 +165,7 @@ class Horario extends Model
         // Límite de 3 bloques de 40 min = 120 min diarios por materia
         if (($duracionExistenteMinutos + $duracionNuevaMinutos) > 120) {
             throw ValidationException::withMessages([
-                'materia_id' => 'Regla Antifatiga: No se pueden asignar más de 3 horas (120 min) de la misma materia en un solo día.',
+                'materia_id' => 'Para evitar agotar a los alumnos, no deberías asignar más de 3 bloques continuos de esta materia el mismo día.',
             ]);
         }
     }
@@ -201,7 +201,7 @@ class Horario extends Model
 
         if (($minutosExistentes + $duracionNuevaMinutos) > $minutosMaximos) {
             throw ValidationException::withMessages([
-                'materia_id' => "Se ha excedido el límite semanal para '{$materia->nombre}'. Máximo permitido por pénsum: {$materia->horas_semanales} horas académicas (" . $minutosMaximos . " min).",
+                'materia_id' => "Ya has alcanzado el límite de horas permitidas a la semana para la materia '{$materia->nombre}' según su pénsum.",
             ]);
         }
     }

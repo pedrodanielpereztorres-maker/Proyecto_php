@@ -233,9 +233,10 @@ class GeneradorHorarios extends Page implements HasForms, HasActions
                         \Illuminate\Support\Facades\DB::rollBack();
                         $errores = collect($e->errors())->flatten()->implode(', ');
                         \Filament\Notifications\Notification::make()
-                            ->title('Regla de Negocio Incumplida')
+                            ->title('¡No se pudo asignar el bloque!')
                             ->body($errores)
-                            ->danger()
+                            ->warning()
+                            ->icon('heroicon-o-exclamation-triangle')
                             ->duration(8000)
                             ->send();
                     } catch (\Exception $e) {
@@ -248,7 +249,12 @@ class GeneradorHorarios extends Page implements HasForms, HasActions
                     }
                 }
             })
-            ->modalWidth('md');
+            ->modalWidth('md')
+            ->visible(function () {
+                if (!$this->seccion_id) return false;
+                $seccion = \App\Models\Seccion::find($this->seccion_id);
+                return $seccion && $seccion->estado_horario === 'borrador';
+            });
     }
 
     public function asignarRecesoAction(): Action
@@ -275,6 +281,11 @@ class GeneradorHorarios extends Page implements HasForms, HasActions
 
                 $this->cargarHorarios();
                 \Filament\Notifications\Notification::make()->title('Receso asignado (20 min)')->success()->send();
+            })
+            ->visible(function () {
+                if (!$this->seccion_id) return false;
+                $seccion = \App\Models\Seccion::find($this->seccion_id);
+                return $seccion && $seccion->estado_horario === 'borrador';
             });
     }
 
@@ -291,6 +302,88 @@ class GeneradorHorarios extends Page implements HasForms, HasActions
                 \App\Models\Horario::find($arguments['id'])?->delete();
                 $this->cargarHorarios();
                 \Filament\Notifications\Notification::make()->title('Bloque eliminado')->success()->send();
+            })
+            ->visible(function () {
+                if (!$this->seccion_id) return false;
+                $seccion = \App\Models\Seccion::find($this->seccion_id);
+                return $seccion && $seccion->estado_horario === 'borrador';
             });
+    }
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Action::make('enviarRevision')
+                ->label('Enviar a Revisión')
+                ->color('warning')
+                ->icon('heroicon-o-paper-airplane')
+                ->requiresConfirmation()
+                ->modalHeading('¿Enviar horario a revisión?')
+                ->modalDescription('El horario de esta sección pasará a estado "En Revisión" para ser evaluado por coordinación.')
+                ->action(function () {
+                    if (!$this->seccion_id) return;
+                    $seccion = Seccion::find($this->seccion_id);
+                    if ($seccion) {
+                        $seccion->update(['estado_horario' => 'revision']);
+                        \Filament\Notifications\Notification::make()
+                            ->title('Horario enviado a revisión')
+                            ->success()
+                            ->send();
+                    }
+                })
+                ->visible(function () {
+                    if (!$this->seccion_id) return false;
+                    $seccion = Seccion::find($this->seccion_id);
+                    return $seccion && $seccion->estado_horario === 'borrador';
+                }),
+
+            Action::make('aprobarHorario')
+                ->label('Aprobar Horario (Oficial)')
+                ->color('success')
+                ->icon('heroicon-o-check-badge')
+                ->requiresConfirmation()
+                ->modalHeading('¿Aprobar este horario?')
+                ->modalDescription('El horario se marcará como Aprobado y Oficial.')
+                ->action(function () {
+                    if (!$this->seccion_id) return;
+                    $seccion = Seccion::find($this->seccion_id);
+                    if ($seccion) {
+                        $seccion->update(['estado_horario' => 'aprobado']);
+                        \Filament\Notifications\Notification::make()
+                            ->title('Horario aprobado exitosamente')
+                            ->success()
+                            ->send();
+                    }
+                })
+                ->visible(function () {
+                    if (!$this->seccion_id) return false;
+                    $seccion = Seccion::find($this->seccion_id);
+                    return $seccion && $seccion->estado_horario === 'revision';
+                }),
+                
+             Action::make('volverBorrador')
+                ->label('Devolver a Borrador')
+                ->color('danger')
+                ->icon('heroicon-o-arrow-uturn-left')
+                ->requiresConfirmation()
+                ->modalHeading('¿Devolver a borrador?')
+                ->modalDescription('Se quitará el estado actual y volverá a borrador para permitir edición.')
+                ->action(function () {
+                    if (!$this->seccion_id) return;
+                    $seccion = Seccion::find($this->seccion_id);
+                    if ($seccion) {
+                        $seccion->update(['estado_horario' => 'borrador']);
+                        \Filament\Notifications\Notification::make()
+                            ->title('Horario devuelto a borrador')
+                            ->success()
+                            ->send();
+                    }
+                })
+                ->visible(function () {
+                    if (!$this->seccion_id) return false;
+                    $seccion = Seccion::find($this->seccion_id);
+                    return $seccion && in_array($seccion->estado_horario, ['revision', 'aprobado']);
+                }),
+        ];
     }
 }
