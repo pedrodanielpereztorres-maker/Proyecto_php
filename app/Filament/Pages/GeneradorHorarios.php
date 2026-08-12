@@ -209,23 +209,28 @@ class GeneradorHorarios extends Page implements HasForms, HasActions
                 if ($startIndex !== -1) {
                     \Illuminate\Support\Facades\DB::beginTransaction();
                     try {
-                        for ($j = 0; $j < $data['cantidad_bloques'] * 2; $j += 2) {
+                        $minutosTotales = 0;
+                        for ($j = 0; $j < $data['cantidad_bloques']; $j++) {
                             if (isset($this->bloques[$startIndex + $j])) {
                                 $bloqueActual = $this->bloques[$startIndex + $j];
-                                
-                                \App\Models\Horario::create([
-                                    'periodo_academico_id' => $this->periodo_academico_id,
-                                    'seccion_id' => $this->seccion_id,
-                                    'materia_id' => $data['materia_id'],
-                                    'profesor_id' => $data['profesor_id'],
-                                    'espacio_id' => $data['espacio_id'],
-                                    'dia_semana' => $dia,
-                                    'hora_inicio' => $bloqueActual['inicio'],
-                                    'hora_fin' => \Carbon\Carbon::parse($bloqueActual['inicio'])->addMinutes(40)->format('H:i'),
-                                    'es_receso' => false,
-                                ]);
+                                $duracion = $bloqueActual['es_receso_default'] ? 20 : 40;
+                                $minutosTotales += $duracion;
                             }
                         }
+                        
+                        $bloqueInicial = $this->bloques[$startIndex];
+                        
+                        \App\Models\Horario::create([
+                            'periodo_academico_id' => $this->periodo_academico_id,
+                            'seccion_id' => $this->seccion_id,
+                            'materia_id' => $data['materia_id'],
+                            'profesor_id' => $data['profesor_id'],
+                            'espacio_id' => $data['espacio_id'],
+                            'dia_semana' => $dia,
+                            'hora_inicio' => $bloqueInicial['inicio'],
+                            'hora_fin' => \Carbon\Carbon::parse($bloqueInicial['inicio'])->addMinutes($minutosTotales)->format('H:i'),
+                            'es_receso' => false,
+                        ]);
                         \Illuminate\Support\Facades\DB::commit();
                         $this->cargarHorarios();
                         \Filament\Notifications\Notification::make()->title('Bloques asignados correctamente')->success()->send();
