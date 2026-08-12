@@ -11,7 +11,11 @@
             transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
-            min-height: 5rem;
+            /* CRITICAL: fill the full height of the rowspan td */
+            width: 100%;
+            height: 100%;
+            min-height: 3.5rem;
+            box-sizing: border-box;
         }
         .timetable-card:hover {
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
@@ -143,17 +147,17 @@
                             $dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'];
                             $skipRows = [];
                             foreach ($dias as $d) $skipRows[$d] = 0;
-                            
-                            // Paleta de colores usando clases personalizadas
                             $themeKeys = ['theme-blue', 'theme-emerald', 'theme-purple', 'theme-rose', 'theme-amber'];
                         @endphp
+
                         @foreach($this->bloques as $index => $bloque)
                             <tr class="group/row" wire:key="row-{{ $index }}">
+                                {{-- Columna de hora --}}
                                 <td class="px-2 py-3 text-xs text-center align-middle relative sticky left-0 z-20 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md rounded-xl shadow-[4px_0_10px_-3px_rgba(0,0,0,0.05)] border border-gray-100 dark:border-gray-800" wire:key="time-{{ $index }}">
                                     <span class="font-bold text-gray-700 dark:text-gray-300">{{ $bloque['inicio_ampm'] }}</span><br>
                                     <span class="font-bold text-gray-500 dark:text-gray-400">{{ $bloque['fin_ampm'] }}</span>
                                 </td>
-                                
+
                                 @foreach($dias as $dia)
                                     @if($skipRows[$dia] > 0)
                                         @php $skipRows[$dia]--; @endphp
@@ -161,102 +165,79 @@
                                     @endif
 
                                     @php
-                                        $key = $dia . '_' . $bloque['inicio'];
-                                        $asignado = $horariosAsignados[$key] ?? null;
+                                        $key      = $dia . '_' . $bloque['inicio'];
+                                        $asignado = $horariosAsignados[$key] ?? null; // plain array or null
                                     @endphp
-                                    
+
                                     @if($asignado)
                                         @php
-                                            $durationMins = \Carbon\Carbon::parse($asignado->hora_inicio)->diffInMinutes(\Carbon\Carbon::parse($asignado->hora_fin));
-                                            $rowspan = max(1, (int) round($durationMins / 40));
+                                            // Calcular rowspan contando bloques de la grilla que cubre esta asignación
+                                            $rowspan  = 0;
+                                            $contando = false;
+                                            foreach ($this->bloques as $b) {
+                                                if ($b['inicio'] === $asignado['hora_inicio']) $contando = true;
+                                                if ($contando) {
+                                                    $rowspan++;
+                                                    $durB = $b['es_receso_default'] ? 20 : 40;
+                                                    $sigInicio = \Carbon\Carbon::parse($b['inicio'])->addMinutes($durB)->format('H:i');
+                                                    if ($sigInicio >= $asignado['hora_fin']) break;
+                                                }
+                                            }
+                                            $rowspan = max(1, $rowspan);
                                             $skipRows[$dia] = $rowspan - 1;
+                                            $themeClass = $themeKeys[$asignado['materia_id'] % count($themeKeys)];
                                         @endphp
-                                        <td class="relative align-top p-0.5" rowspan="{{ $rowspan }}" wire:key="cell-{{ $index }}-{{ $dia }}">
-                                            @if($asignado->es_receso)
-                                                <div class="bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-700/50 rounded-xl p-2 h-full w-full flex justify-between items-center group shadow-sm hover:shadow-md transition-all relative overflow-hidden {{ $rowspan > 1 ? 'min-h-[5rem]' : 'min-h-[2.5rem]' }}">
-                                                    <!-- Stripe Pattern -->
+
+                                        {{-- CRITICAL: height:0 is a CSS trick to enable percentage heights inside <td> --}}
+                                        <td class="relative align-top p-0.5" rowspan="{{ $rowspan }}" style="height:0;" wire:key="cell-{{ $index }}-{{ $dia }}">
+                                            @if($asignado['es_receso'])
+                                                {{-- ── RECESO ── --}}
+                                                <div class="bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-700/50 rounded-xl p-2 h-full w-full flex justify-between items-center group shadow-sm hover:shadow-md transition-all relative overflow-hidden min-h-[2.5rem]">
                                                     <div class="absolute inset-0 recess-pattern"></div>
-                                                    
                                                     <div class="flex items-center gap-1.5 font-bold text-amber-700 dark:text-amber-500 text-xs w-full justify-center relative z-10 no-print">
-                                                        <x-heroicon-s-clock class="text-amber-500 flex-shrink-0" style="width: 1rem; height: 1rem;" />
+                                                        <x-heroicon-s-clock class="text-amber-500 flex-shrink-0" style="width:1rem;height:1rem;" />
                                                         <span class="tracking-widest uppercase">Receso (20 min)</span>
                                                     </div>
                                                     <div class="absolute top-1/2 -translate-y-1/2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-full shadow-sm z-20 hover:scale-110 no-print">
-                                                        {{ ($this->eliminarBloqueAction)(['id' => $asignado->id]) }}
+                                                        {{ ($this->eliminarBloqueAction)(['id' => $asignado['id']]) }}
                                                     </div>
-                                                    @php
-                                                        $finReceso = \Carbon\Carbon::parse($asignado->hora_fin)->format('H:i');
-                                                        $nextKey = $dia . '_' . $finReceso;
-                                                        $nextAsignado = $horariosAsignados[$nextKey] ?? null;
-                                                    @endphp
-                                                    @if(!$nextAsignado)
-                                                        <div class="absolute inset-0 flex items-center justify-center opacity-50 hover:opacity-100 transition-opacity bg-gray-50/30 dark:bg-gray-800/30 backdrop-blur-[1px] no-print">
-                                                            <div class="flex gap-2 bg-white/90 dark:bg-gray-800/90 p-1.5 rounded-full shadow-sm border border-gray-100 dark:border-gray-700 hover:scale-110 transition-transform">
-                                                                <div title="Añadir clase después del receso">
-                                                                    {{ ($this->asignarBloqueAction)(['dia' => $dia, 'inicio' => $finReceso, 'fin' => '']) }}
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    @endif
                                                 </div>
                                             @else
-                                                @php
-                                                    $themeClass = $themeKeys[$asignado->materia_id % count($themeKeys)];
-                                                @endphp
+                                                {{-- ── CLASE ── --}}
                                                 <div class="timetable-card {{ $themeClass }} group">
-                                                    <!-- Colored Left Indicator -->
                                                     <div class="theme-indicator"></div>
-                                                    
                                                     <div class="relative z-10">
                                                         <div class="font-extrabold theme-title leading-tight text-sm mb-2 drop-shadow-sm">
-                                                            {{ $asignado->materia->nombre }}
+                                                            {{ $asignado['materia_nombre'] }}
                                                         </div>
                                                         <div class="text-xs text-gray-700 dark:text-gray-300 flex items-center gap-1.5 bg-white/60 dark:bg-black/30 rounded-md px-1.5 py-1 mb-1 backdrop-blur-sm w-fit border border-white/20 dark:border-black/20">
-                                                            <x-heroicon-s-user class="theme-icon flex-shrink-0" style="width: 0.875rem; height: 0.875rem;" />
-                                                            <span class="truncate font-medium" title="{{ $asignado->profesor->nombre }} {{ $asignado->profesor->apellido }}">{{ $asignado->profesor->nombre }} {{ $asignado->profesor->apellido }}</span>
+                                                            <x-heroicon-s-user class="theme-icon flex-shrink-0" style="width:0.875rem;height:0.875rem;" />
+                                                            <span class="truncate font-medium">{{ $asignado['profesor_nombre'] }} {{ $asignado['profesor_apellido'] }}</span>
                                                         </div>
                                                         <div class="text-[11px] text-gray-600 dark:text-gray-400 flex items-center gap-1.5 px-1.5 mt-1">
-                                                            <x-heroicon-s-map-pin class="theme-icon flex-shrink-0 opacity-90" style="width: 0.875rem; height: 0.875rem;" />
-                                                            <span class="font-bold truncate" title="{{ $asignado->espacio->codigo }}">{{ $asignado->espacio->codigo }}</span>
+                                                            <x-heroicon-s-map-pin class="theme-icon flex-shrink-0 opacity-90" style="width:0.875rem;height:0.875rem;" />
+                                                            <span class="font-bold truncate">{{ $asignado['espacio_codigo'] }}</span>
                                                         </div>
                                                     </div>
                                                     <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm rounded-full shadow-sm z-20 hover:scale-110 cursor-pointer no-print">
-                                                        {{ ($this->eliminarBloqueAction)(['id' => $asignado->id]) }}
+                                                        {{ ($this->eliminarBloqueAction)(['id' => $asignado['id']]) }}
                                                     </div>
                                                 </div>
                                             @endif
                                         </td>
+
                                     @else
-                                        @php
-                                            $nextBloque = $this->bloques[$index + 1] ?? null;
-                                            $nextKey = $nextBloque ? $dia . '_' . $nextBloque['inicio'] : null;
-                                            $nextAsignado = $nextKey ? ($horariosAsignados[$nextKey] ?? null) : null;
-                                        @endphp
-                                        
-                                        @if($index % 2 == 0 && !$nextAsignado)
-                                            @php $skipRows[$dia] = 1; @endphp
-                                            <td rowspan="2" class="p-1 align-middle h-24" wire:key="cell-{{ $index }}-{{ $dia }}">
-                                                <div class="h-full w-full flex flex-col items-center justify-center gap-2 opacity-0 group-hover/row:opacity-100 transition-all duration-300 bg-transparent hover:bg-gray-50/80 dark:hover:bg-gray-800/40 rounded-xl border-2 border-transparent hover:border-dashed hover:border-gray-300 dark:hover:border-gray-600">
-                                                    <div title="Asignar Materia (40 min)" class="transform hover:scale-110 transition-transform">
-                                                        {{ ($this->asignarBloqueAction)(['dia' => $dia, 'inicio' => $bloque['inicio'], 'fin' => '']) }}
-                                                    </div>
-                                                    <div title="Asignar Receso (20 min)" class="transform hover:scale-110 transition-transform">
-                                                        {{ ($this->asignarRecesoAction)(['dia' => $dia, 'inicio' => $bloque['inicio'], 'fin' => '']) }}
-                                                    </div>
+                                        {{-- ── CELDA VACÍA (botones de añadir) ── --}}
+                                        <td class="p-1 align-middle" style="height:3.5rem;" wire:key="cell-{{ $index }}-{{ $dia }}">
+                                            <div class="h-full w-full flex items-center justify-center gap-3 rounded-xl border-2 border-transparent hover:border-dashed hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50/80 dark:hover:bg-gray-800/40 transition-all duration-200 cursor-pointer" style="min-height:3rem; opacity:0.35;" onmouseenter="this.style.opacity='1'" onmouseleave="this.style.opacity='0.35'">
+                                                <div title="Asignar Materia">
+                                                    {{ ($this->asignarBloqueAction)(['dia' => $dia, 'inicio' => $bloque['inicio'], 'fin' => '']) }}
                                                 </div>
-                                            </td>
-                                        @else
-                                            <td class="p-1 align-middle h-12" wire:key="cell-{{ $index }}-{{ $dia }}">
-                                                <div class="h-full w-full flex items-center justify-center gap-2 opacity-0 group-hover/row:opacity-100 transition-all duration-300 bg-transparent hover:bg-gray-50/80 dark:hover:bg-gray-800/40 rounded-xl border-2 border-transparent hover:border-dashed hover:border-gray-300 dark:hover:border-gray-600">
-                                                    <div title="Asignar Materia (40 min)" class="transform hover:scale-110 transition-transform">
-                                                        {{ ($this->asignarBloqueAction)(['dia' => $dia, 'inicio' => $bloque['inicio'], 'fin' => '']) }}
-                                                    </div>
-                                                    <div title="Asignar Receso (20 min)" class="transform hover:scale-110 transition-transform">
-                                                        {{ ($this->asignarRecesoAction)(['dia' => $dia, 'inicio' => $bloque['inicio'], 'fin' => '']) }}
-                                                    </div>
+                                                <div title="Asignar Receso">
+                                                    {{ ($this->asignarRecesoAction)(['dia' => $dia, 'inicio' => $bloque['inicio'], 'fin' => '']) }}
                                                 </div>
-                                            </td>
-                                        @endif
+                                            </div>
+                                        </td>
                                     @endif
                                 @endforeach
                             </tr>
