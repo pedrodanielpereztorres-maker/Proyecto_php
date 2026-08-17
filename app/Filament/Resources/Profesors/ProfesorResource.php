@@ -19,7 +19,7 @@ class ProfesorResource extends Resource
 {
     protected static ?string $model = Profesor::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBriefcase;
 
     protected static ?string $recordTitleAttribute = 'nombre';
     protected static ?string $navigationLabel = 'Docentes';

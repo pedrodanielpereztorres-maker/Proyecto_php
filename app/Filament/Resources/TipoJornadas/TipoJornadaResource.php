@@ -19,7 +19,7 @@ class TipoJornadaResource extends Resource
 {
     protected static ?string $model = TipoJornada::class;
 
-    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-swatch';
 
     protected static ?string $recordTitleAttribute = 'nombre';
     protected static ?string $navigationLabel = 'Tipos de Jornada';

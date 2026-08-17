@@ -19,7 +19,7 @@ class MateriaResource extends Resource
 {
     protected static ?string $model = Materia::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedPuzzlePiece;
 
     protected static ?string $recordTitleAttribute = 'nombre';
     protected static ?string $navigationLabel = 'Materias';

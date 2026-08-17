@@ -19,7 +19,7 @@ class EspacioResource extends Resource
 {
     protected static ?string $model = Espacio::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-building-office-2';
 
     protected static ?string $recordTitleAttribute = 'codigo';
     protected static ?string $navigationLabel = 'Aulas y Espacios';
