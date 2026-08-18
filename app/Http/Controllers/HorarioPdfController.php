@@ -22,43 +22,9 @@ class HorarioPdfController extends Controller
             ->where('seccion_id', $seccion_id)
             ->get();
             
-        $horariosAsignados = [];
-        foreach ($horarios as $h) {
-            if ($h->hora_inicio) {
-                $horaInicioStr = Carbon::parse($h->hora_inicio)->format('H:i');
-                $key = $h->dia_semana . '_' . $horaInicioStr;
-                // Guardar arrays planos (igual que en la página Livewire)
-                $horariosAsignados[$key] = [
-                    'id'               => $h->id,
-                    'materia_id'       => $h->materia_id,
-                    'es_receso'        => (bool) $h->es_receso,
-                    'hora_inicio'      => $horaInicioStr,
-                    'hora_fin'         => Carbon::parse($h->hora_fin)->format('H:i'),
-                    'materia_nombre'   => optional($h->materia)->nombre ?? '',
-                    'materia_codigo'   => optional($h->materia)->codigo ?? '',
-                    'profesor_nombre'  => optional($h->profesor)->nombre ?? '',
-                    'profesor_apellido'=> optional($h->profesor)->apellido ?? '',
-                    'profesor_telefono'=> optional($h->profesor)->telefono ?? 'N/A',
-                    'espacio_codigo'   => optional($h->espacio)->codigo ?? '',
-                ];
-            }
-        }
-
-        // Calcular el rango activo de horas (solo bloques con clases)
-        $horaMinima = null;
-        $horaMaxima = null;
-        foreach ($horarios as $h) {
-            if ($h->hora_inicio) {
-                $hi = Carbon::parse($h->hora_inicio);
-                $hf = Carbon::parse($h->hora_fin);
-                if (!$horaMinima || $hi->lt($horaMinima)) $horaMinima = $hi->copy();
-                if (!$horaMaxima || $hf->gt($horaMaxima)) $horaMaxima = $hf->copy();
-            }
-        }
-        
-        // Generar grilla: bloques de 40 min, excepto a las 12:00 PM que es un receso de 20 min
         $parametro = JornadaParametro::first();
         $bloques = [];
+        $finesBloques = [];
         if ($parametro) {
             $inicio = Carbon::parse($parametro->hora_inicio);
             $fin    = Carbon::parse($parametro->hora_fin);
@@ -76,17 +42,69 @@ class HorarioPdfController extends Controller
                     'fin_ampm'          => $inicio->format('h:i A'),
                     'es_receso_default' => $esReceso,
                 ];
+                $finesBloques[] = $inicio->format('H:i');
             }
         }
 
-        // Filtrar bloques al rango activo — usar lte para NO cortar el último bloque
+        $horariosAsignados = [];
+        $horaMinima = null;
+        $horaMaxima = null;
+
+        foreach ($horarios as $h) {
+            if (! $h->hora_inicio) {
+                continue;
+            }
+
+            $horaInicioStr = Carbon::parse($h->hora_inicio)->format('H:i');
+            $horaFinStr    = Carbon::parse($h->hora_fin)->format('H:i');
+
+            $inicioBloque = $horaInicioStr;
+            for ($i = count($bloques) - 1; $i >= 0; $i--) {
+                if ($bloques[$i]['inicio'] <= $horaInicioStr) {
+                    if ($finesBloques[$i] > $horaInicioStr) {
+                        $inicioBloque = $bloques[$i]['inicio'];
+                    }
+                    break;
+                }
+            }
+
+            $key = $h->dia_semana . '_' . $inicioBloque;
+
+            if (isset($horariosAsignados[$key])) {
+                continue;
+            }
+
+            $horariosAsignados[$key] = [
+                'id'               => $h->id,
+                'materia_id'       => $h->materia_id,
+                'es_receso'        => (bool) $h->es_receso,
+                'hora_inicio'      => $horaInicioStr,
+                'hora_fin'         => $horaFinStr,
+                'materia_nombre'   => optional($h->materia)->nombre ?? '',
+                'materia_codigo'   => optional($h->materia)->codigo ?? '',
+                'profesor_nombre'  => optional($h->profesor)->nombre ?? '',
+                'profesor_apellido'=> optional($h->profesor)->apellido ?? '',
+                'profesor_telefono'=> optional($h->profesor)->telefono ?? 'N/A',
+                'espacio_codigo'   => optional($h->espacio)->codigo ?? '',
+            ];
+
+            $hi = Carbon::parse($inicioBloque);
+            $hf = Carbon::parse($h->hora_fin);
+            if (! $horaMinima || $hi->lt($horaMinima)) {
+                $horaMinima = $hi->copy();
+            }
+            if (! $horaMaxima || $hf->gt($horaMaxima)) {
+                $horaMaxima = $hf->copy();
+            }
+        }
+
         if ($horaMinima && $horaMaxima) {
             $bloques = array_values(array_filter($bloques, function ($bloque) use ($horaMinima, $horaMaxima) {
                 $bloqueInicio = Carbon::parse($bloque['inicio']);
                 return $bloqueInicio->gte($horaMinima) && $bloqueInicio->lt($horaMaxima);
             }));
         }
-        
+
         $dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'];
         
         $config = Configuracion::first();
@@ -96,7 +114,6 @@ class HorarioPdfController extends Controller
             $logoBase64 = 'data:image/' . $tipo . ';base64,' . base64_encode(file_get_contents(public_path('storage/' . $config->logo)));
         }
 
-        // --- Configuración Global de Documentos ---
         $configDoc = ConfiguracionDocumento::first();
         $membreteTopBase64 = null;
         $membreteBottomBase64 = null;
@@ -117,7 +134,6 @@ class HorarioPdfController extends Controller
             }
         }
 
-        // --- Firma y Sello por Departamento ---
         $departamento = $seccion->carrera ? $seccion->carrera->departamento : null;
         $nombreCoordinador = $departamento ? $departamento->nombre_coordinador : null;
         $firmaBase64 = null;
@@ -137,7 +153,6 @@ class HorarioPdfController extends Controller
         $pdf = Pdf::loadView('pdf.horario', compact('seccion', 'horariosAsignados', 'bloques', 'dias', 'config', 'logoBase64', 'configDoc', 'membreteTopBase64', 'membreteBottomBase64', 'watermarkBase64', 'nombreCoordinador', 'firmaBase64', 'selloBase64', 'departamento'));
         $pdf->setPaper('letter', 'landscape');
         
-        // Formato: carrera_periodo_seccion.pdf
         $carreraStr = $seccion->carrera ? Str::slug($seccion->carrera->nombre) : 'carrera';
         $periodoStr = $seccion->periodoAcademico ? Str::slug($seccion->periodoAcademico->codigo) : 'periodo';
         $seccionStr = Str::slug($seccion->codigo);
