@@ -59,6 +59,11 @@ class GeneradorHorarios extends Page implements HasForms, HasActions
         $this->cargarHorarios();
     }
 
+    public function getSeccionNombreProperty()
+    {
+        return \App\Models\Seccion::find($this->seccion_id)?->codigo ?? '';
+    }
+
     public function form(Schema $schema): Schema
     {
         return $schema
@@ -182,15 +187,16 @@ class GeneradorHorarios extends Page implements HasForms, HasActions
             ->modalHeading('Asignar Clase al Horario')
             ->modalDescription('Complete los datos para asignar una clase a este bloque horario.')
             ->modalIcon('heroicon-o-academic-cap')
+            ->modalWidth('5xl')
             ->form([
-                \Filament\Schemas\Components\Section::make('Materia')
-                    ->icon('heroicon-m-book-open')
-                    ->description('Seleccione o busque la materia que se dictará en este bloque.')
+                \Filament\Schemas\Components\Section::make('Configuración de la Clase')
+                    ->icon('heroicon-m-calendar-days')
+                    ->columns(2)
                     ->schema([
                         \Filament\Forms\Components\Select::make('materia_id')
                             ->label('Materia / Asignatura')
                             ->placeholder('Buscar materia por nombre o código...')
-                            ->helperText('Se muestran solo las materias del semestre y carrera seleccionados.')
+                            ->helperText('Materias del semestre y carrera.')
                             ->prefixIcon('heroicon-m-book-open')
                             ->options(function () {
                                 $query = \App\Models\Materia::query();
@@ -200,27 +206,33 @@ class GeneradorHorarios extends Page implements HasForms, HasActions
                                 if ($this->semestre) {
                                     $query->where('semestre', $this->semestre);
                                 }
-                                // Mostrar código + nombre + horas
                                 return $query->get()->mapWithKeys(fn ($m) =>
                                     [$m->id => "[{$m->codigo}] {$m->nombre}  ·  {$m->horas_semanales} hrs/sem"]
                                 );
                             })
                             ->searchable()
                             ->native(false)
-                            ->required()
-                            ->columnSpanFull(),
-                    ])
-                    ->columns(1)
-                    ->columnSpanFull(),
+                            ->required(),
 
-                \Filament\Schemas\Components\Section::make('Docente y Espacio')
-                    ->icon('heroicon-m-user-group')
-                    ->description('Asigne el profesor responsable y el espacio físico donde se dictará la clase.')
-                    ->schema([
+                        \Filament\Forms\Components\Select::make('cantidad_bloques')
+                            ->label('Duración del Bloque')
+                            ->placeholder('Seleccione duración...')
+                            ->helperText('Cada bloque equivale a 40 minutos de clase.')
+                            ->prefixIcon('heroicon-m-clock')
+                            ->options([
+                                1 => '1 Bloque (40 min)',
+                                2 => '2 Bloques (1 h 20 min)',
+                                3 => '3 Bloques (2 horas)',
+                                4 => '4 Bloques (2 h 40 min)',
+                            ])
+                            ->default(1)
+                            ->native(false)
+                            ->required(),
+
                         \Filament\Forms\Components\Select::make('profesor_id')
                             ->label('Docente Responsable')
-                            ->placeholder('Buscar por nombre, apellido o cédula...')
-                            ->helperText('Nombre completo y cédula del profesor.')
+                            ->placeholder('Buscar profesor o cédula...')
+                            ->helperText('Nombre y cédula del profesor.')
                             ->prefixIcon('heroicon-m-user')
                             ->options(
                                 \App\Models\Profesor::orderBy('apellido')
@@ -236,44 +248,48 @@ class GeneradorHorarios extends Page implements HasForms, HasActions
                         \Filament\Forms\Components\Select::make('espacio_id')
                             ->label('Espacio / Aula')
                             ->placeholder('Buscar aula o laboratorio...')
-                            ->helperText('Seleccione el espacio físico disponible.')
+                            ->helperText('Espacio físico disponible.')
                             ->prefixIcon('heroicon-m-map-pin')
                             ->options(
                                 \App\Models\Espacio::with('tipoEspacio')
                                     ->orderBy('codigo')
                                     ->get()
                                     ->mapWithKeys(fn ($e) =>
-                                        [$e->id => "{$e->codigo}  ·  Cap: {$e->capacidad_maxima} alumnos  ·  " . optional($e->tipoEspacio)->nombre]
+                                        [$e->id => "{$e->codigo}  ·  Cap: {$e->capacidad_maxima}  ·  " . optional($e->tipoEspacio)->nombre]
                                     )
                             )
                             ->searchable()
                             ->native(false)
                             ->required(),
-                    ])
-                    ->columns(2)
-                    ->columnSpanFull(),
+                    ]),
 
-                \Filament\Schemas\Components\Section::make('Duración del Bloque')
-                    ->icon('heroicon-m-clock')
-                    ->description('Cuántos bloques consecutivos de 40 minutos abarcará esta clase.')
+                \Filament\Schemas\Components\Section::make('Vincular a otras secciones (Tronco Común / Multicarrera - Opcional)')
+                    ->icon('heroicon-m-arrows-pointing-out')
                     ->schema([
-                        \Filament\Forms\Components\Select::make('cantidad_bloques')
-                            ->label('Bloques continuos')
-                            ->placeholder('Seleccione duración...')
-                            ->helperText('Cada bloque equivale a 40 minutos de clase.')
-                            ->prefixIcon('heroicon-m-clock')
-                            ->options([
-                                1 => '1 Bloque  —  40 min',
-                                2 => '2 Bloques  —  1 h 20 min',
-                                3 => '3 Bloques  —  2 horas',
-                                4 => '4 Bloques  —  2 h 40 min',
-                            ])
-                            ->default(1)
+                        \Filament\Forms\Components\Select::make('secciones_adicionales')
+                            ->label('Secciones adicionales')
+                            ->placeholder('Seleccionar secciones...')
+                            ->helperText('Se creará este mismo bloque en las secciones seleccionadas de forma simultánea.')
+                            ->prefixIcon('heroicon-m-rectangle-stack')
+                            ->options(function () {
+                                return Seccion::with(['carrera', 'turno'])
+                                    ->where('periodo_academico_id', $this->periodo_academico_id)
+                                    ->where('id', '!=', $this->seccion_id)
+                                    ->when($this->semestre, fn ($q) => $q->where('semestre', $this->semestre))
+                                    ->orderBy('carrera_id')
+                                    ->orderBy('codigo')
+                                    ->get()
+                                    ->mapWithKeys(fn ($s) => [
+                                        $s->id => "{$s->codigo} — " . (optional($s->carrera)->nombre ?? 'General') . ($s->turno ? " ({$s->turno->nombre})" : "")
+                                    ]);
+                            })
+                            ->multiple()
                             ->native(false)
-                            ->required()
+                            ->searchable()
+                            ->preload()
                             ->columnSpanFull(),
                     ])
-                    ->columns(1)
+                    ->collapsed()
                     ->columnSpanFull(),
             ])
             ->action(function (array $data, array $arguments) {
@@ -302,18 +318,40 @@ class GeneradorHorarios extends Page implements HasForms, HasActions
                         }
                         
                         $bloqueInicial = $this->bloques[$startIndex];
+                        $horaFinCalculada = \Carbon\Carbon::parse($bloqueInicial['inicio'])->addMinutes($minutosTotales)->format('H:i');
                         
-                        \App\Models\Horario::create([
-                            'periodo_academico_id' => $this->periodo_academico_id,
-                            'seccion_id' => $this->seccion_id,
-                            'materia_id' => $data['materia_id'],
-                            'profesor_id' => $data['profesor_id'],
-                            'espacio_id' => $data['espacio_id'],
-                            'dia_semana' => $dia,
-                            'hora_inicio' => $bloqueInicial['inicio'],
-                            'hora_fin' => \Carbon\Carbon::parse($bloqueInicial['inicio'])->addMinutes($minutosTotales)->format('H:i'),
-                            'es_receso' => false,
-                        ]);
+                        $seccionesObjetivo = array_merge([$this->seccion_id], $data['secciones_adicionales'] ?? []);
+                        $materiaBase = \App\Models\Materia::find($data['materia_id']);
+
+                        foreach ($seccionesObjetivo as $secId) {
+                            $materiaIdFinal = $data['materia_id'];
+                            $secObj = Seccion::find($secId);
+
+                            if ($secObj && $secId != $this->seccion_id && $materiaBase) {
+                                $materiaEquiv = \App\Models\Materia::where('carrera_id', $secObj->carrera_id)
+                                    ->where(function ($q) use ($materiaBase) {
+                                        $q->where('codigo', $materiaBase->codigo)
+                                          ->orWhere('nombre', $materiaBase->nombre);
+                                    })
+                                    ->first();
+                                if ($materiaEquiv) {
+                                    $materiaIdFinal = $materiaEquiv->id;
+                                }
+                            }
+
+                            \App\Models\Horario::create([
+                                'periodo_academico_id' => $this->periodo_academico_id,
+                                'seccion_id' => $secId,
+                                'materia_id' => $materiaIdFinal,
+                                'profesor_id' => $data['profesor_id'],
+                                'espacio_id' => $data['espacio_id'],
+                                'dia_semana' => $dia,
+                                'hora_inicio' => $bloqueInicial['inicio'],
+                                'hora_fin' => $horaFinCalculada,
+                                'es_receso' => false,
+                                'omitir_validacion_capacidad' => true,
+                            ]);
+                        }
                         \Illuminate\Support\Facades\DB::commit();
                         $this->cargarHorarios();
                         \Filament\Notifications\Notification::make()->title('Bloques asignados correctamente')->success()->send();
@@ -391,6 +429,130 @@ class GeneradorHorarios extends Page implements HasForms, HasActions
     protected function getHeaderActions(): array
     {
         return [
+            Action::make('clonarHorario')
+                ->label('Clonar Horario')
+                ->color('info')
+                ->icon('heroicon-o-document-duplicate')
+                ->modalHeading('Clonar Horario a Otra Sección')
+                ->modalDescription('Copia todas las clases y recesos de esta sección hacia otra sección destino. Las materias comunes (mismo profesor y aula) se mantendrán compartidas sin choques.')
+                ->modalIcon('heroicon-o-document-duplicate')
+                ->form([
+                    \Filament\Schemas\Components\Section::make('Configuración de Clonación')
+                        ->schema([
+                            \Filament\Forms\Components\Select::make('seccion_destino_id')
+                                ->label('Sección Destino')
+                                ->placeholder('Seleccionar sección destino...')
+                                ->helperText('Selecciona la sección que recibirá la copia exacta de este horario.')
+                                ->prefixIcon('heroicon-m-rectangle-stack')
+                                ->options(function () {
+                                    return Seccion::with(['carrera', 'turno'])
+                                        ->where('periodo_academico_id', $this->periodo_academico_id)
+                                        ->where('id', '!=', $this->seccion_id)
+                                        ->when($this->semestre, fn ($q) => $q->where('semestre', $this->semestre))
+                                        ->orderBy('carrera_id')
+                                        ->orderBy('codigo')
+                                        ->get()
+                                        ->mapWithKeys(fn ($s) => [
+                                            $s->id => "{$s->codigo} — " . (optional($s->carrera)->nombre ?? 'General') . " · Sem. {$s->semestre}" . ($s->turno ? " ({$s->turno->nombre})" : "")
+                                        ]);
+                                })
+                                ->native(false)
+                                ->searchable()
+                                ->preload()
+                                ->required(),
+                            \Filament\Forms\Components\Toggle::make('reemplazar_existentes')
+                                ->label('Reemplazar horario existente si la sección destino ya tiene clases')
+                                ->default(false)
+                                ->helperText('Si se activa, eliminará previamente los bloques asignados en la sección destino.'),
+                        ])
+                ])
+                ->modalSubmitActionLabel('Clonar Horario Ahora')
+                ->modalCancelActionLabel('Cancelar')
+                ->action(function (array $data) {
+                    $seccionDestinoId = $data['seccion_destino_id'];
+                    $seccionDestino = Seccion::with('carrera')->find($seccionDestinoId);
+                    $seccionOrigen = Seccion::with('carrera')->find($this->seccion_id);
+
+                    if (!$seccionDestino || !$seccionOrigen) return;
+
+                    $horariosOrigen = Horario::where('seccion_id', $this->seccion_id)
+                        ->where('periodo_academico_id', $this->periodo_academico_id)
+                        ->get();
+
+                    if ($horariosOrigen->isEmpty()) {
+                        \Filament\Notifications\Notification::make()
+                            ->title('La sección actual no tiene clases para clonar.')
+                            ->warning()
+                            ->send();
+                        return;
+                    }
+
+                    \Illuminate\Support\Facades\DB::beginTransaction();
+                    try {
+                        if (!empty($data['reemplazar_existentes'])) {
+                            Horario::where('seccion_id', $seccionDestinoId)
+                                ->where('periodo_academico_id', $this->periodo_academico_id)
+                                ->delete();
+                        }
+
+                        $clonadas = 0;
+                        foreach ($horariosOrigen as $h) {
+                            $materiaDestinoId = $h->materia_id;
+                            if ($h->materia && $seccionDestino->carrera_id !== $seccionOrigen->carrera_id) {
+                                $materiaEquivalente = \App\Models\Materia::where('carrera_id', $seccionDestino->carrera_id)
+                                    ->where(function ($q) use ($h) {
+                                        $q->where('codigo', $h->materia->codigo)
+                                          ->orWhere('nombre', $h->materia->nombre);
+                                    })
+                                    ->first();
+                                if ($materiaEquivalente) {
+                                    $materiaDestinoId = $materiaEquivalente->id;
+                                }
+                            }
+
+                            Horario::create([
+                                'periodo_academico_id' => $this->periodo_academico_id,
+                                'seccion_id' => $seccionDestinoId,
+                                'materia_id' => $materiaDestinoId,
+                                'profesor_id' => $h->profesor_id,
+                                'espacio_id' => $h->espacio_id,
+                                'dia_semana' => $h->dia_semana,
+                                'hora_inicio' => $h->hora_inicio ? Carbon::parse($h->hora_inicio)->format('H:i') : null,
+                                'hora_fin' => $h->hora_fin ? Carbon::parse($h->hora_fin)->format('H:i') : null,
+                                'es_receso' => (bool) $h->es_receso,
+                                'omitir_validacion_capacidad' => true,
+                            ]);
+                            $clonadas++;
+                        }
+
+                        \Illuminate\Support\Facades\DB::commit();
+
+                        \Filament\Notifications\Notification::make()
+                            ->title("¡Horario clonado exitosamente!")
+                            ->body("Se copiaron {$clonadas} bloque(s) a la sección {$seccionDestino->codigo}. Ahora puedes ingresar a ella y ajustar individualmente las electivas.")
+                            ->success()
+                            ->duration(8000)
+                            ->send();
+                    } catch (\Exception $e) {
+                        \Illuminate\Support\Facades\DB::rollBack();
+                        \Filament\Notifications\Notification::make()
+                            ->title('Error al clonar horario')
+                            ->body($e->getMessage())
+                            ->danger()
+                            ->duration(8000)
+                            ->send();
+                    }
+                })
+                ->visible(fn (): bool => !empty($this->seccion_id) && !empty($this->horariosAsignados)),
+
+            Action::make('imprimirPdf')
+                ->label('Vista Previa / Imprimir PDF')
+                ->color('gray')
+                ->icon('heroicon-o-printer')
+                ->url(fn (): ?string => $this->seccion_id ? route('horarios.pdf', ['seccion_id' => $this->seccion_id]) : null)
+                ->openUrlInNewTab()
+                ->visible(fn (): bool => !empty($this->seccion_id)),
+
             Action::make('enviarRevision')
                 ->label('Enviar a Revisión')
                 ->color('warning')

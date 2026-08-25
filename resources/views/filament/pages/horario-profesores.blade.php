@@ -93,16 +93,25 @@
         <div class="mt-8 rounded-2xl bg-white dark:bg-gray-900 ring-1 ring-gray-200 dark:ring-white/10 p-6 shadow-sm">
             <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white">
-                        {{ $prof?->nombre }} {{ $prof?->apellido }}
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2 flex-wrap">
+                        <span>{{ $prof?->nombre }} {{ $prof?->apellido }}</span>
+                        @if($prof?->cedula)
+                            <span class="text-xs font-semibold text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-2.5 py-0.5 rounded-full">C.I. {{ $prof->cedula }}</span>
+                        @endif
                     </h2>
-                    <p class="text-sm text-gray-500 mt-2">
+                    <p class="text-sm text-gray-500 mt-1">
                         Horario de clases
                         @if($periodo) &mdash; Período: <strong class="text-gray-900 dark:text-white">{{ $periodo->codigo }}</strong> @endif
                     </p>
                 </div>
-                <div class="inline-flex items-center rounded-full border border-gray-200 bg-gray-50 px-4 py-2 text-sm font-semibold text-gray-700 dark:border-white/10 dark:bg-white/5 dark:text-gray-200">
-                    {{ $horarios->count() }} clase(s) asignada(s)
+                <div class="flex items-center gap-3">
+                    <div class="inline-flex items-center rounded-full border border-gray-200 bg-gray-50 px-4 py-2 text-sm font-semibold text-gray-700 dark:border-white/10 dark:bg-white/5 dark:text-gray-200">
+                        {{ $horarios->count() }} clase(s) asignada(s)
+                    </div>
+                    <a href="{{ route('profesores.pdf', ['profesor_id' => $this->profesor_id, 'periodo_academico_id' => $this->periodo_academico_id]) }}" target="_blank" class="inline-flex items-center gap-2 rounded-xl bg-red-600 hover:bg-red-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                        Imprimir Horario PDF
+                    </a>
                 </div>
             </div>
         </div>
@@ -114,13 +123,32 @@
             </div>
         @else
             @php
+                $horaMinima = null;
+                $horaMaxima = null;
                 $horariosAsignados = [];
                 foreach ($horarios as $h) {
+                    if (!$h->hora_inicio) continue;
                     $key = $h->dia_semana . '_' . \Carbon\Carbon::parse($h->hora_inicio)->format('H:i');
                     $horariosAsignados[$key] = $h;
+                    
+                    $hi = \Carbon\Carbon::parse($h->hora_inicio);
+                    $hf = \Carbon\Carbon::parse($h->hora_fin);
+                    if (!$horaMinima || $hi->lt($horaMinima)) $horaMinima = $hi->copy();
+                    if (!$horaMaxima || $hf->gt($horaMaxima)) $horaMaxima = $hf->copy();
                 }
                 
-                $dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+                $bloquesVisibles = $this->bloques;
+                if ($horaMinima && $horaMaxima) {
+                    $bloquesVisibles = array_values(array_filter($this->bloques, function ($bloque) use ($horaMinima, $horaMaxima) {
+                        $bIni = \Carbon\Carbon::parse($bloque['inicio']);
+                        return $bIni->gte($horaMinima) && $bIni->lt($horaMaxima);
+                    }));
+                }
+                if (empty($bloquesVisibles)) {
+                    $bloquesVisibles = $this->bloques;
+                }
+                
+                $dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'];
                 $skipRows = [];
                 foreach ($dias as $d) $skipRows[$d] = 0;
                 
@@ -128,17 +156,17 @@
             @endphp
             
             <div class="mt-6 overflow-auto relative z-10 p-2 max-h-[75vh]" style="scrollbar-width: thin; scrollbar-color: rgba(156, 163, 175, 0.5) transparent;">
-                <table class="w-full text-sm text-left border-separate" style="border-spacing: 4px;">
+                <table class="w-full text-sm text-left border-collapse">
                     <thead class="sticky top-0 z-30">
                         <tr>
-                            <th class="px-3 py-3 w-28 text-center text-xs font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 sticky left-0 z-40 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md rounded-xl shadow-sm">Hora</th>
+                            <th class="px-3 py-3 w-28 text-center text-xs font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 sticky left-0 z-40 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md rounded-xl shadow-sm border border-gray-100 dark:border-gray-800">Hora</th>
                             @foreach($dias as $dia)
-                                <th class="px-4 py-3 text-center min-w-[13rem] text-xs font-bold uppercase tracking-widest text-gray-600 dark:text-gray-300 bg-gray-50/90 dark:bg-gray-800/90 backdrop-blur-md rounded-xl shadow-sm">{{ $dia }}</th>
+                                <th class="px-4 py-3 text-center min-w-[13rem] text-xs font-bold uppercase tracking-widest text-gray-600 dark:text-gray-300 bg-gray-50/90 dark:bg-gray-800/90 backdrop-blur-md rounded-xl shadow-sm border border-gray-100 dark:border-gray-800">{{ $dia }}</th>
                             @endforeach
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach($this->bloques as $index => $bloque)
+                        @foreach($bloquesVisibles as $index => $bloque)
                             <tr>
                                 <td class="px-2 py-3 text-[10px] sm:text-xs text-center align-middle relative sticky left-0 z-20 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md rounded-xl shadow-[4px_0_10px_-3px_rgba(0,0,0,0.05)] border border-gray-100 dark:border-gray-800">
                                     <span class="font-bold text-gray-700 dark:text-gray-300">{{ $bloque['inicio_ampm'] }}</span><br>
@@ -158,20 +186,36 @@
                                     
                                     @if($asignado)
                                         @php
-                                            $durationMins = \Carbon\Carbon::parse($asignado->hora_inicio)->diffInMinutes(\Carbon\Carbon::parse($asignado->hora_fin));
-                                            $rowspan = max(1, (int) round($durationMins / 40));
-                                            $skipRows[$dia] = $rowspan - 1;
+                                            $horaFinAsig = \Carbon\Carbon::parse($asignado->hora_fin)->format('H:i');
+                                            $rowspan = 0;
+                                            for ($k = $index; $k < count($bloquesVisibles); $k++) {
+                                                if ($bloquesVisibles[$k]['inicio'] < $horaFinAsig) {
+                                                    $rowspan++;
+                                                } else {
+                                                    break;
+                                                }
+                                            }
+                                            $rowspan = max(1, $rowspan);
+                                            if ($rowspan > 1) {
+                                                $skipRows[$dia] = $rowspan - 1;
+                                            }
                                         @endphp
-                                        <td class="relative align-top p-0.5" rowspan="{{ $rowspan }}">
+                                        <td class="relative align-top p-1" rowspan="{{ $rowspan }}">
                                             @php
                                                 $themeClass = $themeKeys[$asignado->materia_id % count($themeKeys)];
+                                                $horaIniFmt = \Carbon\Carbon::parse($asignado->hora_inicio)->format('h:i A');
+                                                $horaFinFmt = \Carbon\Carbon::parse($asignado->hora_fin)->format('h:i A');
                                             @endphp
-                                            <div class="timetable-card {{ $themeClass }} h-full">
+                                            <div class="timetable-card {{ $themeClass }} h-full" style="min-height: {{ $rowspan * 65 }}px;">
                                                 <div class="theme-indicator"></div>
                                                 <div class="relative z-10 flex flex-col h-full justify-between">
                                                     <div>
-                                                        <div class="font-extrabold theme-title leading-tight text-[12px] sm:text-sm mb-1.5 drop-shadow-sm">
+                                                        <div class="font-extrabold theme-title leading-tight text-[12px] sm:text-sm mb-1 drop-shadow-sm">
                                                             {{ $asignado->materia->nombre }}
+                                                        </div>
+                                                        <div class="text-[11px] font-bold text-gray-800 dark:text-gray-200 mb-1.5 flex items-center gap-1">
+                                                            <x-heroicon-m-clock class="flex-shrink-0 text-gray-500 dark:text-gray-400" style="width: 13px; height: 13px; min-width: 13px;" />
+                                                            <span>{{ $horaIniFmt }} &ndash; {{ $horaFinFmt }}</span>
                                                         </div>
                                                         <div class="text-[10px] sm:text-[11px] text-gray-700 dark:text-gray-300 flex items-center gap-1.5 bg-white/60 dark:bg-black/30 rounded-md px-1.5 py-1 mb-1 backdrop-blur-sm w-fit border border-white/20 dark:border-black/20">
                                                             <span class="font-bold uppercase tracking-wider">Sec: {{ $asignado->seccion->codigo }}</span>
@@ -192,7 +236,7 @@
                                         </td>
                                     @else
                                         <td class="p-1 align-middle h-16">
-                                            <div class="h-full w-full rounded-xl bg-gray-50/50 dark:bg-gray-800/20 border border-dashed border-gray-200 dark:border-gray-800/50"></div>
+                                            <div class="h-full w-full min-h-[60px] rounded-xl bg-gray-50/50 dark:bg-gray-800/20 border border-dashed border-gray-200 dark:border-gray-800/50"></div>
                                         </td>
                                     @endif
                                 @endforeach

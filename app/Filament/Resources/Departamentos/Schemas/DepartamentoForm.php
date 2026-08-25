@@ -38,7 +38,11 @@ class DepartamentoForm
                             ->label('Nombre del Coordinador/Jefe')
                             ->placeholder('Ej: Ing. Juan Pérez')
                             ->prefixIcon('heroicon-m-user')
-                            ->columnSpanFull()
+                            ->maxLength(255),
+                        TextInput::make('cedula_coordinador')
+                            ->label('Cédula del Coordinador/Jefe')
+                            ->placeholder('Ej: V-12.345.678')
+                            ->prefixIcon('heroicon-m-identification')
                             ->maxLength(255),
                         FileUpload::make('firma_coordinador')
                             ->label('Firma Digital')

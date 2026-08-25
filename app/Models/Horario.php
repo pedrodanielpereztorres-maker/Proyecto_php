@@ -71,31 +71,67 @@ class Horario extends Model
     {
         $periodoId = $horario->periodo_academico_id;
 
-        $conflictoProfesor = static::where('periodo_academico_id', $periodoId)
+        // 1. Conflicto de Profesor:
+        // El docente no puede estar en aulas distintas a la vez ni dictar materias diferentes en el mismo horario.
+        // Únicamente se permite si es la MISMA aula dictando la MISMA materia (Tronco Común / Clase Compartida).
+        $materiaActual = Materia::find($horario->materia_id);
+        $nombreMateriaActual = $materiaActual ? trim(mb_strtolower($materiaActual->nombre)) : '';
+
+        $horariosSolapadosProfesor = static::with('materia')
+            ->where('periodo_academico_id', $periodoId)
             ->where('dia_semana', $horario->dia_semana)
             ->where('profesor_id', $horario->profesor_id)
             ->where('id', '!=', $horario->id ?? 0)
             ->where('hora_inicio', '<', $horario->hora_fin)
             ->where('hora_fin', '>', $horario->hora_inicio)
-            ->exists();
+            ->get();
 
-        if ($conflictoProfesor) {
-            throw ValidationException::withMessages([
-                'profesor_id' => '¡Choque detectado! El profesor ya está dando otra clase a esa misma hora.',
-            ]);
+        foreach ($horariosSolapadosProfesor as $hExistente) {
+            if ($hExistente->espacio_id != $horario->espacio_id) {
+                throw ValidationException::withMessages([
+                    'profesor_id' => '¡Choque detectado! El profesor ya está asignado en otra aula distinta a esa misma hora.',
+                ]);
+            }
+
+            $nombreExistente = $hExistente->materia ? trim(mb_strtolower($hExistente->materia->nombre)) : '';
+            if ($nombreMateriaActual && $nombreExistente && $nombreMateriaActual !== $nombreExistente) {
+                throw ValidationException::withMessages([
+                    'profesor_id' => "¡Choque detectado! El profesor ya está dictando otra materia distinta ('{$hExistente->materia->nombre}') en ese mismo horario.",
+                ]);
+            }
         }
 
+        // 2. Conflicto de Espacio Físico:
+        // Ocurre si el aula está ocupada por OTRO profesor a esa misma hora.
+        // Si es el MISMO profesor, es la misma clase compartida dictada simultáneamente a varias secciones.
         $conflictoEspacio = static::where('periodo_academico_id', $periodoId)
             ->where('dia_semana', $horario->dia_semana)
             ->where('espacio_id', $horario->espacio_id)
             ->where('id', '!=', $horario->id ?? 0)
             ->where('hora_inicio', '<', $horario->hora_fin)
             ->where('hora_fin', '>', $horario->hora_inicio)
+            ->where('profesor_id', '!=', $horario->profesor_id)
             ->exists();
 
         if ($conflictoEspacio) {
             throw ValidationException::withMessages([
-                'espacio_id' => 'Este espacio físico ya se encuentra ocupado a esa hora por otra sección.',
+                'espacio_id' => 'Este espacio físico ya se encuentra ocupado a esa hora por otro profesor/materia.',
+            ]);
+        }
+
+        // 3. Conflicto de Sección:
+        // La misma sección no puede tener dos clases distintas o solapadas al mismo tiempo
+        $conflictoSeccion = static::where('periodo_academico_id', $periodoId)
+            ->where('dia_semana', $horario->dia_semana)
+            ->where('seccion_id', $horario->seccion_id)
+            ->where('id', '!=', $horario->id ?? 0)
+            ->where('hora_inicio', '<', $horario->hora_fin)
+            ->where('hora_fin', '>', $horario->hora_inicio)
+            ->exists();
+
+        if ($conflictoSeccion) {
+            throw ValidationException::withMessages([
+                'hora_inicio' => 'Esta sección ya tiene otra materia asignada en este mismo horario.',
             ]);
         }
     }

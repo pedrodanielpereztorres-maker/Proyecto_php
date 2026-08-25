@@ -17,6 +17,7 @@ class Departamento extends Model
         'descripcion',
         'activo',
         'nombre_coordinador',
+        'cedula_coordinador',
         'firma_coordinador',
         'sello_departamento',
     ];

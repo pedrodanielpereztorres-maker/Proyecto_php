@@ -122,7 +122,8 @@
                         Horario Académico
                     </h2>
                     <p class="text-sm text-gray-500 dark:text-gray-400 mt-1 flex items-center gap-2">
-                        <span class="font-medium text-gray-700 dark:text-gray-300">{{ \App\Models\Seccion::find($seccion_id)->codigo ?? '' }}</span>
+                        {{-- MEJORA: Usar la propiedad computada del componente --}}
+                        <span class="font-medium text-gray-700 dark:text-gray-300">{{ $this->seccion_nombre }}</span>
                         &bull; Lunes a Viernes &bull; Bloques de 40 min
                     </p>
                 </div>
@@ -138,19 +139,29 @@
                         <tr>
                             <th class="px-3 py-3 w-32 text-center text-xs font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 sticky left-0 z-40 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md rounded-xl shadow-sm">Hora</th>
                             @foreach($dias as $dia)
-                                <th class="px-4 py-3 text-center w-48 text-xs font-bold uppercase tracking-widest text-gray-600 dark:text-gray-300 bg-gray-50/90 dark:bg-gray-800/90 backdrop-blur-md rounded-xl shadow-sm">{{ $dia }}</th>
+                                {{-- MEJORA: Resaltar columna del día actual --}}
+                                @php $esHoy = ($loop->index + 1) === (int)date('N'); @endphp
+                                <th class="px-4 py-3 text-center w-48 text-xs font-bold uppercase tracking-widest {{ $esHoy ? 'bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300' : 'text-gray-600 dark:text-gray-300 bg-gray-50/90 dark:bg-gray-800/90' }} backdrop-blur-md rounded-xl shadow-sm">
+                                    {{ $dia }}
+                                    @if($esHoy)
+                                        <span class="ml-2 inline-block px-1.5 py-0.5 bg-primary-500 text-white text-[10px] rounded-full align-middle">HOY</span>
+                                    @endif
+                                </th>
                             @endforeach
                         </tr>
                     </thead>
                     <tbody>
                         @php
+                            // MEJORA: Preparar datos. ¡Esto idealmente debería ir en el componente!
+                            // Por ahora, lo movemos aquí para que sea más claro.
+                            $allBloques = $this->bloques;
                             $dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'];
                             $skipRows = [];
                             foreach ($dias as $d) $skipRows[$d] = 0;
                             $themeKeys = ['theme-blue', 'theme-emerald', 'theme-purple', 'theme-rose', 'theme-amber'];
                         @endphp
 
-                        @foreach($this->bloques as $index => $bloque)
+                        @foreach($allBloques as $index => $bloque)
                             <tr class="group/row" wire:key="row-{{ $index }}">
                                 {{-- Columna de hora --}}
                                 <td class="px-2 py-3 text-xs text-center align-middle relative sticky left-0 z-20 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md rounded-xl shadow-[4px_0_10px_-3px_rgba(0,0,0,0.05)] border border-gray-100 dark:border-gray-800" wire:key="time-{{ $index }}">
@@ -166,7 +177,8 @@
 
                                     @php
                                         $key      = $dia . '_' . $bloque['inicio'];
-                                        $asignado = $horariosAsignados[$key] ?? null; // plain array or null
+                                        $asignado = $horariosAsignados[$key] ?? null;
+                                        $esColumnaHoy = ($loop->parent->index + 1) === (int)date('N'); // MEJORA: Para resaltar columna de hoy
                                     @endphp
 
                                     @if($asignado)
@@ -174,7 +186,7 @@
                                             // Calcular rowspan contando bloques de la grilla que cubre esta asignación
                                             $rowspan  = 0;
                                             $contando = false;
-                                            foreach ($this->bloques as $b) {
+                                            foreach ($allBloques as $b) {
                                                 if ($b['inicio'] === $asignado['hora_inicio']) $contando = true;
                                                 if ($contando) {
                                                     $rowspan++;
@@ -189,7 +201,8 @@
                                         @endphp
 
                                         {{-- CRITICAL: height:0 is a CSS trick to enable percentage heights inside <td> --}}
-                                        <td class="relative align-top p-0.5" rowspan="{{ $rowspan }}" style="height:0;" wire:key="cell-{{ $index }}-{{ $dia }}">
+                                        {{-- MEJORA: Añadir un fondo sutil si es la columna de hoy --}}
+                                        <td class="relative align-top p-0.5 {{ $esColumnaHoy ? 'bg-primary-50/30 dark:bg-primary-900/10' : '' }}" rowspan="{{ $rowspan }}" style="height:0;" wire:key="cell-{{ $index }}-{{ $dia }}">
                                             @if($asignado['es_receso'])
                                                 {{-- ── RECESO ── --}}
                                                 <div class="bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-700/50 rounded-xl p-2 h-full w-full flex justify-between items-center group shadow-sm hover:shadow-md transition-all relative overflow-hidden min-h-[2.5rem]">
@@ -198,7 +211,8 @@
                                                         <x-heroicon-s-clock class="text-amber-500 flex-shrink-0" style="width:1rem;height:1rem;" />
                                                         <span class="tracking-widest uppercase">Receso (20 min)</span>
                                                     </div>
-                                                    <div class="absolute top-1/2 -translate-y-1/2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-full shadow-sm z-20 hover:scale-110 no-print">
+                                                    {{-- MEJORA: El botón de eliminar ahora es visible con foco (focus-within) --}}
+                                                    <div class="absolute top-1/2 -translate-y-1/2 right-2 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-full shadow-sm z-20 hover:scale-110 no-print">
                                                         {{ ($this->eliminarBloqueAction)(['id' => $asignado['id']]) }}
                                                     </div>
                                                 </div>
@@ -210,16 +224,20 @@
                                                         <div class="font-extrabold theme-title leading-tight text-sm mb-2 drop-shadow-sm">
                                                             {{ $asignado['materia_nombre'] }}
                                                         </div>
+                                                        {{-- MEJORA: Añadir 'title' para el nombre completo del profesor --}}
                                                         <div class="text-xs text-gray-700 dark:text-gray-300 flex items-center gap-1.5 bg-white/60 dark:bg-black/30 rounded-md px-1.5 py-1 mb-1 backdrop-blur-sm w-fit border border-white/20 dark:border-black/20">
                                                             <x-heroicon-s-user class="theme-icon flex-shrink-0" style="width:0.875rem;height:0.875rem;" />
-                                                            <span class="truncate font-medium">{{ $asignado['profesor_nombre'] }} {{ $asignado['profesor_apellido'] }}</span>
+                                                            <span class="truncate font-medium" title="{{ $asignado['profesor_nombre'] }} {{ $asignado['profesor_apellido'] }}">
+                                                                {{ $asignado['profesor_nombre'] }} {{ $asignado['profesor_apellido'] }}
+                                                            </span>
                                                         </div>
                                                         <div class="text-[11px] text-gray-600 dark:text-gray-400 flex items-center gap-1.5 px-1.5 mt-1">
                                                             <x-heroicon-s-map-pin class="theme-icon flex-shrink-0 opacity-90" style="width:0.875rem;height:0.875rem;" />
                                                             <span class="font-bold truncate">{{ $asignado['espacio_codigo'] }}</span>
                                                         </div>
                                                     </div>
-                                                    <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm rounded-full shadow-sm z-20 hover:scale-110 cursor-pointer no-print">
+                                                    {{-- MEJORA: El botón de eliminar ahora es visible con foco --}}
+                                                    <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm rounded-full shadow-sm z-20 hover:scale-110 cursor-pointer no-print">
                                                         {{ ($this->eliminarBloqueAction)(['id' => $asignado['id']]) }}
                                                     </div>
                                                 </div>
@@ -228,12 +246,14 @@
 
                                     @else
                                         {{-- ── CELDA VACÍA (botones de añadir) ── --}}
-                                        <td class="p-1 align-middle" style="height:3.5rem;" wire:key="cell-{{ $index }}-{{ $dia }}">
-                                            <div class="h-full w-full flex items-center justify-center gap-3 rounded-xl border-2 border-transparent hover:border-dashed hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50/80 dark:hover:bg-gray-800/40 transition-all duration-200 cursor-pointer" style="min-height:3rem; opacity:0.35;" onmouseenter="this.style.opacity='1'" onmouseleave="this.style.opacity='0.35'">
-                                                <div title="Asignar Materia">
+                                        {{-- MEJORA: Hacer que la celda sea más visible y tenga feedback al presionar --}}
+                                        <td class="p-1 align-middle {{ $esColumnaHoy ? 'bg-primary-50/30 dark:bg-primary-900/10' : '' }}" style="height:3.5rem;" wire:key="cell-{{ $index }}-{{ $dia }}">
+                                            <div class="h-full w-full flex items-center justify-center gap-3 rounded-xl border-2 border-transparent hover:border-dashed hover:border-primary-300 dark:hover:border-primary-700 hover:bg-primary-50/50 dark:hover:bg-primary-900/20 transition-all duration-200 cursor-pointer group/add-btn" style="min-height:3rem; opacity:0.6;" onmouseenter="this.style.opacity='1'" onmouseleave="this.style.opacity='0.6'">
+                                                {{-- MEJORA: Añadido 'active:scale-95' para feedback. 'title' más informativo --}}
+                                                <div title="Asignar Materia ({{ $dia }}, {{ $bloque['inicio_ampm'] }})" class="transition-transform active:scale-95">
                                                     {{ ($this->asignarBloqueAction)(['dia' => $dia, 'inicio' => $bloque['inicio'], 'fin' => '']) }}
                                                 </div>
-                                                <div title="Asignar Receso">
+                                                <div title="Asignar Receso ({{ $dia }}, {{ $bloque['inicio_ampm'] }})" class="transition-transform active:scale-95">
                                                     {{ ($this->asignarRecesoAction)(['dia' => $dia, 'inicio' => $bloque['inicio'], 'fin' => '']) }}
                                                 </div>
                                             </div>

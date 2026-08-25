@@ -45,54 +45,89 @@ class PeriodoAcademicoResource extends Resource
     public static function form(Schema $schema): Schema
     {
         return $schema->components([
-            Section::make('Configuración del Período')
-                ->description('Establece los parámetros y fechas de este ciclo académico.')
-                ->icon('heroicon-o-calendar')
+            Section::make('Identificación y Estado del Ciclo')
+                ->description('Configura la nomenclatura oficial y el estado operativo del período.')
+                ->icon('heroicon-o-information-circle')
                 ->columnSpanFull()
+                ->columns(2)
                 ->schema([
                     TextInput::make('codigo')
                         ->label('Código del Período')
-                        ->placeholder('Ej: PR26-2')
-                        ->helperText('Identificador único oficial.')
+                        ->placeholder('Ej: PR26-2, 2026-II...')
+                        ->helperText('Identificador único oficial del ciclo lectivo.')
                         ->prefixIcon('heroicon-m-hashtag')
                         ->required()
                         ->maxLength(100)
                         ->unique(ignoreRecord: true),
-                        
+
                     \Filament\Forms\Components\Select::make('estado')
                         ->label('Estado del Período')
                         ->options([
-                            'planificacion' => 'En Planificación',
-                            'curso' => 'En Curso',
-                            'cerrado' => 'Cerrado',
+                            'planificacion' => 'En Planificación (Borrador / Preparación)',
+                            'curso' => 'En Curso (Activo / Visible en Portal)',
+                            'cerrado' => 'Cerrado (Histórico / Finalizado)',
                         ])
                         ->native(false)
                         ->prefixIcon('heroicon-m-flag')
+                        ->helperText('Controla la fase del ciclo académico en el sistema.')
                         ->default('planificacion')
                         ->required(),
+                ]),
 
+            Section::make('Calendario y Duración Lectiva')
+                ->description('Define las fechas límites del ciclo. La cantidad de semanas se calcula en automático pero puedes ajustarla manualmente.')
+                ->icon('heroicon-o-calendar-days')
+                ->columnSpanFull()
+                ->columns(3)
+                ->schema([
                     DatePicker::make('fecha_inicio')
                         ->label('Fecha de Inicio')
-                        ->required()
-                        ->native(false),
+                        ->placeholder('Selecciona fecha...')
+                        ->prefixIcon('heroicon-m-calendar')
+                        ->native(false)
+                        ->live()
+                        ->afterStateUpdated(function (callable $get, callable $set) {
+                            $inicio = $get('fecha_inicio');
+                            $fin = $get('fecha_fin');
+                            if ($inicio && $fin) {
+                                $dias = \Carbon\Carbon::parse($inicio)->diffInDays(\Carbon\Carbon::parse($fin));
+                                $semanas = max(1, (int) round($dias / 7));
+                                $set('duracion_semanas', $semanas);
+                            }
+                        })
+                        ->required(),
 
                     DatePicker::make('fecha_fin')
                         ->label('Fecha de Fin')
-                        ->required()
-                        ->afterOrEqual('fecha_inicio')
+                        ->placeholder('Selecciona fecha...')
+                        ->prefixIcon('heroicon-m-calendar')
                         ->native(false)
-                        ->helperText('Debe ser igual o posterior a la fecha de inicio.'),
+                        ->live()
+                        ->afterStateUpdated(function (callable $get, callable $set) {
+                            $inicio = $get('fecha_inicio');
+                            $fin = $get('fecha_fin');
+                            if ($inicio && $fin) {
+                                $dias = \Carbon\Carbon::parse($inicio)->diffInDays(\Carbon\Carbon::parse($fin));
+                                $semanas = max(1, (int) round($dias / 7));
+                                $set('duracion_semanas', $semanas);
+                            }
+                        })
+                        ->afterOrEqual('fecha_inicio')
+                        ->helperText('Igual o posterior al inicio.')
+                        ->required(),
 
                     TextInput::make('duracion_semanas')
-                        ->label('Duración aproximada')
+                        ->label('Duración en Semanas')
+                        ->placeholder('Ej: 16')
+                        ->helperText('Cálculo automático o editable a mano.')
+                        ->prefixIcon('heroicon-m-clock')
                         ->suffix('semanas')
                         ->numeric()
                         ->default(16)
                         ->minValue(1)
                         ->maxValue(52)
                         ->required(),
-                ])
-                ->columns(2),
+                ]),
         ]);
     }
 
@@ -102,6 +137,8 @@ class PeriodoAcademicoResource extends Resource
             ->columns([
                 TextColumn::make('codigo')
                     ->label('Código Período')
+                    ->weight(\Filament\Support\Enums\FontWeight::Bold)
+                    ->icon('heroicon-m-calendar-days')
                     ->searchable()
                     ->sortable()
                     ->badge()
@@ -110,11 +147,21 @@ class PeriodoAcademicoResource extends Resource
                 TextColumn::make('fecha_inicio')
                     ->label('Fecha Inicio')
                     ->date('d/m/Y')
+                    ->icon('heroicon-m-calendar')
                     ->sortable(),
 
                 TextColumn::make('fecha_fin')
                     ->label('Fecha Fin')
                     ->date('d/m/Y')
+                    ->icon('heroicon-m-calendar')
+                    ->sortable(),
+
+                TextColumn::make('duracion_semanas')
+                    ->label('Duración')
+                    ->badge()
+                    ->color('info')
+                    ->formatStateUsing(fn ($state) => "{$state} sem.")
+                    ->alignCenter()
                     ->sortable(),
 
                 TextColumn::make('estado')
@@ -130,22 +177,21 @@ class PeriodoAcademicoResource extends Resource
                         'curso' => 'En Curso',
                         'cerrado' => 'Cerrado',
                         default => $state,
-                    }),
-
-                TextColumn::make('duracion_semanas')
-                    ->label('Semanas')
-                    ->numeric()
-                    ->sortable(),
+                    })
+                    ->alignCenter(),
 
                 TextColumn::make('horarios_count')
-                    ->label('Horarios')
+                    ->label('Clases')
                     ->counts('horarios')
-                    ->badge(),
+                    ->badge()
+                    ->color('gray')
+                    ->alignCenter(),
 
                 TextColumn::make('created_at')
                     ->label('Creado')
                     ->dateTime('d/m/Y')
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->defaultSort('codigo', 'desc')
             ->recordActions([

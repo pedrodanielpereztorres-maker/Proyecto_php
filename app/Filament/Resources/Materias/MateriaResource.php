@@ -42,7 +42,7 @@ class MateriaResource extends Resource
 
         public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()->with(['carrera']);
+        return parent::getEloquentQuery()->with(['carrera', 'tipoEspacio']);
     }
 
     public static function getRelations(): array

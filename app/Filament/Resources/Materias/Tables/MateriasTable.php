@@ -15,23 +15,54 @@ class MateriasTable
         return $table
             ->columns([
                 TextColumn::make('codigo')
-                    ->searchable(),
-                TextColumn::make('nombre')
-                    ->searchable(),
-                TextColumn::make('creditos')
-                    ->numeric()
+                    ->label('Código')
+                    ->weight(\Filament\Support\Enums\FontWeight::Bold)
+                    ->icon('heroicon-m-key')
+                    ->searchable()
                     ->sortable(),
+
+                TextColumn::make('nombre')
+                    ->label('Asignatura')
+                    ->weight(\Filament\Support\Enums\FontWeight::Bold)
+                    ->searchable()
+                    ->sortable(),
+
                 TextColumn::make('carrera.nombre')
                     ->label('Carrera')
+                    ->badge()
+                    ->color('info')
+                    ->placeholder('General / Tronco Común')
                     ->sortable()
                     ->searchable(),
+
                 TextColumn::make('semestre')
+                    ->label('Semestre')
+                    ->formatStateUsing(fn ($state) => $state ? "{$state}° Sem" : 'N/A')
+                    ->badge()
+                    ->color('gray')
+                    ->alignCenter()
                     ->sortable(),
+
                 TextColumn::make('horas_semanales')
-                    ->label('Horas semanales')
+                    ->label('Horas/Sem')
+                    ->formatStateUsing(fn ($state) => "{$state}h")
+                    ->badge()
+                    ->color('warning')
+                    ->alignCenter()
                     ->sortable(),
+
                 TextColumn::make('tipoEspacio.nombre')
-                    ->label('Tipo de espacio')
+                    ->label('Espacio Requerido')
+                    ->badge()
+                    ->color('success')
+                    ->icon('heroicon-m-map-pin')
+                    ->placeholder('No definido')
+                    ->sortable(),
+
+                TextColumn::make('creditos')
+                    ->label('U.C.')
+                    ->alignCenter()
+                    ->numeric()
                     ->sortable(),
                 TextColumn::make('created_at')
                     ->dateTime()
