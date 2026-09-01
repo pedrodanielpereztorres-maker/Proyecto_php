@@ -142,6 +142,30 @@ class AdminPanelProvider extends PanelProvider
                             box-shadow: 0 4px 15px -3px rgba(0, 0, 0, 0.05) !important;
                         }
                         
+                        /* Dashboard profesional */
+                        .fi-dashboard-page {
+                            background: linear-gradient(180deg, #f8fafc 0%, #eef2ff 100%);
+                            padding-top: 1rem;
+                        }
+                        .fi-dashboard-page .fi-section {
+                            background: rgba(255,255,255,0.84) !important;
+                            backdrop-filter: blur(6px);
+                            border: 1px solid rgba(148,163,184,0.18) !important;
+                            border-radius: 1rem !important;
+                            box-shadow: 0 18px 35px -26px rgba(15,23,42,0.35) !important;
+                        }
+                        .fi-wi-stats-overview-widget .fi-stat {
+                            background: linear-gradient(135deg, rgba(255,255,255,0.95), rgba(248,250,252,0.9)) !important;
+                            border: 1px solid rgba(148,163,184,0.2) !important;
+                            border-radius: 1rem !important;
+                            box-shadow: 0 10px 25px -18px rgba(15,23,42,0.35) !important;
+                        }
+                        .fi-wi-chart-widget .fi-section {
+                            border-radius: 1.1rem !important;
+                        }
+                        .fi-wi-chart-widget canvas {
+                            max-height: 260px !important;
+                        }
                         /* Soporte para Logo en Barra Lateral Oscura (Móviles) */
                         .fi-sidebar-header {
                             background-color: #ffffff !important;
@@ -160,11 +184,10 @@ class AdminPanelProvider extends PanelProvider
             ->font('Montserrat')
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
-            ->pages([
-                Dashboard::class,
-            ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([
+                \App\Filament\Widgets\ResumenGeneralWidget::class,
+                \App\Filament\Widgets\CarrerasPorPeriodoWidget::class,
                 #AccountWidget::class,
                 #FilamentInfoWidget::class,
             ])

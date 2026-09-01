@@ -17,4 +17,11 @@ class AcademicCatalogResourcesTest extends TestCase
     {
         $this->assertSame('niveles_academicos', (new NivelAcademico())->getTable());
     }
+
+    public function test_dashboard_and_widgets_are_available(): void
+    {
+        $this->assertTrue(class_exists(\App\Filament\Pages\Dashboard::class));
+        $this->assertTrue(class_exists(\App\Filament\Widgets\ResumenGeneralWidget::class));
+        $this->assertTrue(class_exists(\App\Filament\Widgets\CarrerasPorPeriodoWidget::class));
+    }
 }
